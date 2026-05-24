@@ -700,7 +700,7 @@
     <nav class="tabs" role="tablist" aria-label="行程页面">
       <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-quick" data-tab="panel-quick">Quick Access</button>
       <button class="tab-button active" type="button" role="tab" aria-selected="true" aria-controls="panel-itinerary" data-tab="panel-itinerary">行程安排</button>
-      <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-tips" data-tab="panel-tips">预订与贴士</button>
+      <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-checklist" data-tab="panel-checklist">计划 Checklist</button>
       <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-french" data-tab="panel-french">常用法语</button>
     </nav>
 
@@ -1894,37 +1894,104 @@
       </div>
     </section>
 
-    <section class="tab-panel" id="panel-tips" role="tabpanel" hidden>
+    <section class="tab-panel" id="panel-checklist" role="tabpanel" hidden>
       <div class="section-header">
-        <h2>预订与贴士</h2>
-        <p>把真正影响当天体验的准备项放在这里。</p>
+        <h2>计划 Checklist</h2>
+        <p>按预订、交通、餐厅和出发前准备拆分；勾选状态会保存在当前浏览器。</p>
       </div>
 
-      <div class="tips-grid">
-        <div class="tip-card">
-          <h3>火车票</h3>
-          <p>重点是 9/18 Toulouse → Valence d'Agen、9/20 Valence d'Agen → Toulouse。9/20 不赶飞机，只要顺利回 Toulouse 过夜即可。</p>
-        </div>
-        <div class="tip-card">
-          <h3>城堡接送</h3>
-          <p>Château de Goudourville 不适合依赖临时 Uber。抵达和离开都提前确认 taxi service 或婚礼接送。</p>
-        </div>
-        <div class="tip-card">
-          <h3>尼斯天气</h3>
-          <p>九月南法 20-25°C，非常舒服。尼斯海水大概率还能游，带泳衣、水鞋和薄外套。</p>
-        </div>
-        <div class="tip-card">
-          <h3>Nice 三天主线</h3>
-          <p>9/21 Nice 本城，9/22 Eze + Nice 放松，9/23 Cours Saleya + Villefranche + Cap Ferrat。Monaco 不放进主线。</p>
-        </div>
-        <div class="tip-card">
-          <h3>现金</h3>
-          <p>大部分地方刷卡。Chez Pipo、La Merenda 这类老店可能更适合备一点现金。</p>
-        </div>
-        <div class="tip-card">
-          <h3>不要硬塞</h3>
-          <p>Carcassonne、A350 tour、Monaco、Cannes、Antibes 都不进主线。体力和本地氛围比多打几个点更值。</p>
-        </div>
+      <div class="checklist-grid">
+        <section class="check-section">
+          <h3>住宿</h3>
+          <div class="check-item">
+            <input id="check-grand-balcon" type="checkbox" data-check-id="grand-balcon" checked>
+            <label for="check-grand-balcon">Toulouse 9/16-9/18：Hôtel Le Grand Balcon<span>2 adults / 1 room；早餐未购买。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-chateau" type="checkbox" data-check-id="chateau" checked>
+            <label for="check-chateau">Château de Goudourville 9/18-9/20<span>两晚都住城堡；确认抵达和离开接送。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-soclo" type="checkbox" data-check-id="soclo" checked>
+            <label for="check-soclo">Toulouse 9/20-9/21：Hôtel SOCLO<span>Check-in 16:00，checkout 12:00。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-nice-hotel" type="checkbox" data-check-id="nice-hotel" checked>
+            <label for="check-nice-hotel">Nice 9/21-9/24：Hôtel Palais de la Méditerranée<span>Confirmation 42322645；13 Promenade des Anglais。</span></label>
+          </div>
+        </section>
+
+        <section class="check-section">
+          <h3>机票</h3>
+          <div class="check-item">
+            <input id="check-ba-out" type="checkbox" data-check-id="ba-out" checked>
+            <label for="check-ba-out">去程 BA284 + BA370：SFO → Toulouse<span>Booking reference Z4KYSK；9/16 16:35 到 TLS。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-easyjet" type="checkbox" data-check-id="easyjet" checked>
+            <label for="check-easyjet">easyJet EJU1626 / U2 1626：TLS → NCE<span>Booking KCPCT44；9/21 12:20-13:30；bag drop 10:20-11:20。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-ba-return" type="checkbox" data-check-id="ba-return" checked>
+            <label for="check-ba-return">回程 BA327 + BA287：Nice → SFO<span>Booking reference Z6ITP9；9/24 11:25 NCE T1 → LHR T5 → 17:40 SFO。</span></label>
+          </div>
+        </section>
+
+        <section class="check-section">
+          <h3>活动与餐厅</h3>
+          <div class="check-item">
+            <input id="check-piano" type="checkbox" data-check-id="piano" checked>
+            <label for="check-piano">Piano aux Jacobins 票<span>9/17 20:00；ticketdirect-1.pdf 保存在手机离线文件里。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-wedding" type="checkbox" data-check-id="wedding" checked>
+            <label for="check-wedding">婚礼请帖 / RSVP 链接<span><a href="https://lynnandguillaume.netlify.app/#travel" target="_blank" rel="noopener">lynnandguillaume.netlify.app/#travel</a></span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-eze-view-lunch" type="checkbox" data-check-id="eze-view-lunch">
+            <label for="check-eze-view-lunch">决定并预订 9/22 Èze 景观午餐<span>Château Eza / La Chèvre d'Or / Les Remparts；如果要吃正式景观餐，现在到 6 月底订。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-le-plongeoir" type="checkbox" data-check-id="le-plongeoir">
+            <label for="check-le-plongeoir">可选：预订 Nice 海上餐厅 Le Plongeoir<span>如果想要海景/日落正餐，提前 1-2 个月订；否则去 Le Vivier lounge 可临时。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-villefranche-lunch" type="checkbox" data-check-id="villefranche-lunch">
+            <label for="check-villefranche-lunch">预订 9/23 Villefranche 港湾午餐<span>Mayssa Beach 露台优先；或 La Mère Germaine。提前 2-4 周订。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-babel-babel" type="checkbox" data-check-id="babel-babel">
+            <label for="check-babel-babel">预订 9/21 Nice 第一晚 Babel Babel<span>提前 1-2 周；备注 balcony / terrace。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-vh-lunch" type="checkbox" data-check-id="vh-lunch">
+            <label for="check-vh-lunch">预订 9/17 Victor Hugo Market 午餐<span>Le Magret；提前 1-2 周电话订，建议 11:45-12:00 到。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-toulouse-arrival-dinner" type="checkbox" data-check-id="toulouse-arrival-dinner">
+            <label for="check-toulouse-arrival-dinner">可选：预订 9/16 Toulouse 第一晚晚餐<span>Le Genty Magre；如果确定要吃 cassoulet，提前 1-2 周订。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-n5-wine-bar" type="checkbox" data-check-id="n5-wine-bar">
+            <label for="check-n5-wine-bar">可选：预订 9/17 Piano 后 N5 Wine Bar<span>提前 1 周以上；当成音乐会后小酒，不排重晚餐。</span></label>
+          </div>
+        </section>
+
+        <section class="check-section">
+          <h3>交通准备</h3>
+          <div class="check-item">
+            <input id="check-train" type="checkbox" data-check-id="train">
+            <label for="check-train">买 Toulouse ↔ Valence d'Agen 火车票<span>重点是 9/18 去城堡、9/20 回 Toulouse。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-chateau-transfer" type="checkbox" data-check-id="chateau-transfer">
+            <label for="check-chateau-transfer">确认 Château taxi service<span>9/18 Valence d'Agen → 城堡；9/20 城堡 → Valence d'Agen / Toulouse。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-docs" type="checkbox" data-check-id="docs">
+            <label for="check-docs">出发前核对护照、绿卡、签证和 LHR 转机要求<span>按 British Airways 和英国官方页面再次核对。</span></label>
+          </div>
+        </section>
       </div>
     </section>
 
@@ -2114,6 +2181,16 @@
         panels.forEach((panel) => {
           panel.hidden = panel.id !== targetId;
         });
+      });
+    });
+
+    const checks = document.querySelectorAll("[data-check-id]");
+    checks.forEach((check) => {
+      const key = `france-trip-2026:${check.dataset.checkId}`;
+      const stored = localStorage.getItem(key);
+      if (stored !== null) check.checked = stored === "true";
+      check.addEventListener("change", () => {
+        localStorage.setItem(key, String(check.checked));
       });
     });
 
