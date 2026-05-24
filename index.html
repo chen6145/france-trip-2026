@@ -700,7 +700,6 @@
     <nav class="tabs" role="tablist" aria-label="行程页面">
       <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-quick" data-tab="panel-quick">Quick Access</button>
       <button class="tab-button active" type="button" role="tab" aria-selected="true" aria-controls="panel-itinerary" data-tab="panel-itinerary">行程安排</button>
-      <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-checklist" data-tab="panel-checklist">计划 Checklist</button>
       <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-tips" data-tab="panel-tips">预订与贴士</button>
       <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-french" data-tab="panel-french">常用法语</button>
     </nav>
@@ -1895,87 +1894,6 @@
       </div>
     </section>
 
-    <section class="tab-panel" id="panel-checklist" role="tabpanel" hidden>
-      <div class="section-header">
-        <h2>计划 Checklist</h2>
-        <p>按预订、交通、餐厅和出发前准备拆分；勾选状态会保存在当前浏览器。</p>
-      </div>
-
-      <div class="checklist-grid">
-        <section class="check-section">
-          <h3>住宿</h3>
-          <div class="check-item">
-            <input id="check-grand-balcon" type="checkbox" data-check-id="grand-balcon" checked>
-            <label for="check-grand-balcon">Toulouse 9/16-9/18：Hôtel Le Grand Balcon<span>2 adults / 1 room；早餐未购买。</span></label>
-          </div>
-          <div class="check-item">
-            <input id="check-chateau" type="checkbox" data-check-id="chateau" checked>
-            <label for="check-chateau">Château de Goudourville 9/18-9/20<span>两晚都住城堡；确认抵达和离开接送。</span></label>
-          </div>
-          <div class="check-item">
-            <input id="check-soclo" type="checkbox" data-check-id="soclo" checked>
-            <label for="check-soclo">Toulouse 9/20-9/21：Hôtel SOCLO<span>Check-in 16:00，checkout 12:00。</span></label>
-          </div>
-          <div class="check-item">
-            <input id="check-nice-hotel" type="checkbox" data-check-id="nice-hotel" checked>
-            <label for="check-nice-hotel">Nice 9/21-9/24：Hôtel Palais de la Méditerranée<span>Confirmation 42322645；13 Promenade des Anglais。</span></label>
-          </div>
-        </section>
-
-        <section class="check-section">
-          <h3>机票</h3>
-          <div class="check-item">
-            <input id="check-ba-out" type="checkbox" data-check-id="ba-out" checked>
-            <label for="check-ba-out">去程 BA284 + BA370：SFO → Toulouse<span>Booking reference Z4KYSK；9/16 16:35 到 TLS。</span></label>
-          </div>
-          <div class="check-item">
-            <input id="check-easyjet" type="checkbox" data-check-id="easyjet" checked>
-            <label for="check-easyjet">easyJet EJU1626 / U2 1626：TLS → NCE<span>Booking KCPCT44；9/21 12:20-13:30；bag drop 10:20-11:20。</span></label>
-          </div>
-          <div class="check-item">
-            <input id="check-ba-return" type="checkbox" data-check-id="ba-return" checked>
-            <label for="check-ba-return">回程 BA327 + BA287：Nice → SFO<span>Booking reference Z6ITP9；9/24 11:25 NCE T1 → LHR T5 → 17:40 SFO。</span></label>
-          </div>
-        </section>
-
-        <section class="check-section">
-          <h3>活动与餐厅</h3>
-          <div class="check-item">
-            <input id="check-piano" type="checkbox" data-check-id="piano" checked>
-            <label for="check-piano">Piano aux Jacobins 票<span>9/17 20:00；ticketdirect-1.pdf 保存在手机离线文件里。</span></label>
-          </div>
-          <div class="check-item">
-            <input id="check-wedding" type="checkbox" data-check-id="wedding" checked>
-            <label for="check-wedding">婚礼请帖 / RSVP 链接<span><a href="https://lynnandguillaume.netlify.app/#travel" target="_blank" rel="noopener">lynnandguillaume.netlify.app/#travel</a></span></label>
-          </div>
-          <div class="check-item">
-            <input id="check-vh-lunch" type="checkbox" data-check-id="vh-lunch">
-            <label for="check-vh-lunch">Victor Hugo Market 午餐<span>9/17 建议 11:45-12:00 到。</span></label>
-          </div>
-          <div class="check-item">
-            <input id="check-nice-dinner" type="checkbox" data-check-id="nice-dinner">
-            <label for="check-nice-dinner">Nice / Villefranche 晚餐<span>Le Plongeoir、La Mère Germaine、老城小馆按偏好决定。</span></label>
-          </div>
-        </section>
-
-        <section class="check-section">
-          <h3>交通准备</h3>
-          <div class="check-item">
-            <input id="check-train" type="checkbox" data-check-id="train">
-            <label for="check-train">买 Toulouse ↔ Valence d'Agen 火车票<span>重点是 9/18 去城堡、9/20 回 Toulouse。</span></label>
-          </div>
-          <div class="check-item">
-            <input id="check-chateau-transfer" type="checkbox" data-check-id="chateau-transfer">
-            <label for="check-chateau-transfer">确认 Château taxi service<span>9/18 Valence d'Agen → 城堡；9/20 城堡 → Valence d'Agen / Toulouse。</span></label>
-          </div>
-          <div class="check-item">
-            <input id="check-docs" type="checkbox" data-check-id="docs">
-            <label for="check-docs">出发前核对护照、绿卡、签证和 LHR 转机要求<span>按 British Airways 和英国官方页面再次核对。</span></label>
-          </div>
-        </section>
-      </div>
-    </section>
-
     <section class="tab-panel" id="panel-tips" role="tabpanel" hidden>
       <div class="section-header">
         <h2>预订与贴士</h2>
@@ -2196,16 +2114,6 @@
         panels.forEach((panel) => {
           panel.hidden = panel.id !== targetId;
         });
-      });
-    });
-
-    const checks = document.querySelectorAll("[data-check-id]");
-    checks.forEach((check) => {
-      const key = `france-trip-2026:${check.dataset.checkId}`;
-      const stored = localStorage.getItem(key);
-      if (stored !== null) check.checked = stored === "true";
-      check.addEventListener("change", () => {
-        localStorage.setItem(key, String(check.checked));
       });
     });
 
