@@ -1,1702 +1,2081 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>南法婚礼之旅 - 2026年9月 - Interactive</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
-
-  :root {
-    --bg: #0f0f0f;
-    --card: #1a1a1a;
-    --accent: #c9a96e;
-    --accent-light: #e8d5a8;
-    --text: #e0e0e0;
-    --text-muted: #888;
-    --text-dim: #666;
-    --border: #2a2a2a;
-    --tag-bg: #2a2218;
-    --tag-text: #c9a96e;
-    --timeline-line: #333;
-    --expand-bg: #151515;
-    --wedding-pink: #e8a0bf;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', -apple-system, sans-serif;
-    line-height: 1.7;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* ============ HERO ============ */
-  .hero {
-    position: relative;
-    height: 70vh;
-    min-height: 500px;
-    overflow: hidden;
-    display: flex;
-    align-items: flex-end;
-  }
-  .hero-img {
-    position: absolute;
-    inset: 0;
-    background: url('https://images.unsplash.com/photo-1765922498419-e73dfd80da43?w=1400&q=80') center/cover;
-    filter: brightness(0.45);
-  }
-  .hero-content {
-    position: relative;
-    z-index: 1;
-    padding: 60px;
-    max-width: 800px;
-  }
-  .hero h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 3.5rem;
-    font-weight: 700;
-    color: #fff;
-    line-height: 1.2;
-    margin-bottom: 12px;
-  }
-  .hero .subtitle {
-    font-size: 1.15rem;
-    color: rgba(255,255,255,0.7);
-    font-weight: 300;
-  }
-
-  /* ============ OVERVIEW ============ */
-  .overview-section {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 24px 0;
-  }
-  .overview {
-    display: flex;
-    gap: 1px;
-    background: var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 40px;
-  }
-  .overview-item {
-    flex: 1;
-    background: var(--card);
-    padding: 24px 16px;
-    text-align: center;
-  }
-  .overview-item .label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-  }
-  .overview-item .value {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.15rem;
-    color: #fff;
-  }
-
-  /* ============ MAIN LAYOUT ============ */
-  .main-layout {
-    display: flex;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 24px;
-    gap: 40px;
-  }
-
-  .timeline-panel {
-    flex: 1;
-    min-width: 0;
-    padding-bottom: 100vh; /* extra scroll space so last day can trigger */
-  }
-
-  .map-panel {
-    width: 480px;
-    flex-shrink: 0;
-    position: sticky;
-    top: 20px;
-    height: calc(100vh - 40px);
-    align-self: flex-start;
-  }
-  .map-container {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-  .map-container h3 {
-    font-family: 'Playfair Display', serif;
-    color: #fff;
-    font-size: 1.2rem;
-    margin-bottom: 16px;
-    text-align: center;
-  }
-  .map-container svg {
-    flex: 1;
-    width: 100%;
-  }
-
-  /* ============ SECTION HEADER ============ */
-  .section-header {
-    padding: 60px 0 40px;
-  }
-  .section-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2rem;
-    color: #fff;
-    margin-bottom: 8px;
-  }
-  .section-header p {
-    color: var(--text-muted);
-    font-size: 0.95rem;
-  }
-
-  /* ============ TIMELINE ============ */
-  .timeline {
-    position: relative;
-    padding-left: 48px;
-  }
-  .timeline::before {
-    content: '';
-    position: absolute;
-    left: 15px;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: var(--timeline-line);
-  }
-
-  .day {
-    position: relative;
-    margin-bottom: 48px;
-    transition: opacity 0.4s;
-  }
-  .day.dimmed { opacity: 0.35; }
-  .day.active { opacity: 1; }
-
-  .day-dot {
-    position: absolute; left: -48px; top: 4px;
-    width: 31px; height: 31px; border-radius: 50%;
-    background: var(--bg); border: 2px solid var(--timeline-line);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.7rem; font-weight: 600; color: var(--text-muted);
-    transition: all 0.4s;
-  }
-  .day.active .day-dot {
-    border-color: var(--accent); color: var(--accent);
-    box-shadow: 0 0 16px rgba(201,169,110,0.4);
-    transform: scale(1.15);
-  }
-  .day.highlight .day-dot {
-    border-color: var(--accent); color: var(--accent);
-    box-shadow: 0 0 12px rgba(201,169,110,0.3);
-  }
-  .day.highlight.active .day-dot {
-    border-color: var(--wedding-pink); color: var(--wedding-pink);
-    box-shadow: 0 0 20px rgba(232,160,191,0.5);
-  }
-  .day-date {
-    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.2px;
-    color: var(--accent); margin-bottom: 4px;
-  }
-  .day-title {
-    font-family: 'Playfair Display', serif; font-size: 1.5rem;
-    color: #fff; margin-bottom: 12px;
-  }
-  .day-desc { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 16px; }
-
-  /* City intro block */
-  .city-intro {
-    background: linear-gradient(135deg, #1e1e1e 0%, #1a1a1a 100%);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    border-radius: 8px;
-    padding: 16px 20px;
-    margin-bottom: 16px;
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    line-height: 1.8;
-  }
-  .city-intro strong { color: var(--accent-light); font-weight: 500; }
-  .city-intro .city-intro-title {
-    font-family: 'Playfair Display', serif;
-    color: #fff;
-    font-size: 1rem;
-    margin-bottom: 8px;
-  }
-
-  .spot-card {
-    background: var(--card); border-radius: 12px; overflow: hidden;
-    margin-bottom: 16px; border: 1px solid var(--border); transition: border-color 0.3s;
-  }
-  .spot-card:hover { border-color: #444; }
-  .spot-img { width: 100%; height: 220px; object-fit: cover; display: block; }
-  .spot-body { padding: 20px; }
-  .spot-name { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: #fff; margin-bottom: 4px; }
-  .spot-meta { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 10px; }
-  .spot-text { font-size: 0.9rem; color: var(--text-muted); line-height: 1.8; }
-  .spot-text strong { color: var(--text); font-weight: 500; }
-
-  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-  .tag {
-    background: var(--tag-bg); color: var(--tag-text);
-    font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; font-weight: 500;
-  }
-
-  details {
-    background: var(--expand-bg); border: 1px solid var(--border);
-    border-radius: 10px; margin-top: 12px; overflow: hidden;
-  }
-  details + details { margin-top: 8px; }
-  summary {
-    padding: 14px 20px; cursor: pointer; font-size: 0.9rem; font-weight: 500;
-    color: var(--accent-light); list-style: none;
-    display: flex; align-items: center; gap: 8px;
-    user-select: none; transition: background 0.2s;
-  }
-  summary:hover { background: rgba(201,169,110,0.05); }
-  summary::before {
-    content: '>'; display: inline-block; font-family: monospace;
-    font-size: 0.85rem; transition: transform 0.2s; color: var(--text-dim);
-  }
-  details[open] summary::before { transform: rotate(90deg); }
-  .expand-content {
-    padding: 0 20px 16px; font-size: 0.9rem;
-    color: var(--text-muted); line-height: 1.8;
-  }
-  .expand-content strong { color: var(--text); font-weight: 500; }
-  .expand-content ul { padding-left: 18px; margin: 8px 0; }
-  .expand-content li { margin-bottom: 6px; }
-
-  .transport {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: #1a2332; color: #6ba3d6;
-    font-size: 0.8rem; padding: 5px 12px; border-radius: 20px; margin-bottom: 12px;
-  }
-
-  /* ============ MAP SVG STYLES ============ */
-  .map-city { transition: all 0.5s ease; }
-  .map-city .city-dot { transition: all 0.5s ease; }
-  .map-city .city-glow { opacity: 0; transition: opacity 0.5s ease; }
-  .map-city.active .city-glow { opacity: 1; }
-  .map-city.active .city-dot { transform-origin: center; }
-  .map-city .city-label { transition: all 0.5s ease; }
-  .map-city.active .city-label { fill: #fff !important; }
-
-  .route-segment { transition: all 0.6s ease; }
-  .route-segment.lit { opacity: 1 !important; }
-
-  /* Flying dot animation */
-  .flying-dot {
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .flying-dot.visible { opacity: 1; }
-
-  /* Wedding pulse */
-  @keyframes weddingPulse {
-    0% { r: 8; opacity: 0.6; }
-    50% { r: 25; opacity: 0; }
-    100% { r: 8; opacity: 0.6; }
-  }
-  .wedding-pulse {
-    animation: weddingPulse 2s ease-in-out infinite;
-    fill: var(--wedding-pink);
-    opacity: 0;
-    transition: opacity 0.5s;
-  }
-  .wedding-pulse.active { opacity: 0.6; }
-
-  /* City info popup on map */
-  .map-info {
-    position: absolute;
-    bottom: 20px;
-    left: 24px;
-    right: 24px;
-    background: rgba(15,15,15,0.95);
-    border: 1px solid var(--accent);
-    border-radius: 10px;
-    padding: 14px 18px;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.4s ease;
-    pointer-events: none;
-    backdrop-filter: blur(8px);
-  }
-  .map-info.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  .map-info .info-city {
-    font-family: 'Playfair Display', serif;
-    color: #fff;
-    font-size: 1rem;
-    margin-bottom: 4px;
-  }
-  .map-info .info-date {
-    color: var(--accent);
-    font-size: 0.75rem;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-  .map-info .info-transport {
-    color: #6ba3d6;
-    font-size: 0.8rem;
-    margin-top: 6px;
-  }
-
-  /* ============ INFO CARDS (flights, hotels, restaurants, tennis) ============ */
-  .info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 20px;
-  }
-  @media (max-width: 640px) { .info-grid { grid-template-columns: 1fr; } }
-  .info-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-  }
-  .info-card .ic-icon { font-size: 1.3rem; margin-bottom: 6px; }
-  .info-card .ic-title { font-weight: 600; color: #fff; font-size: 0.95rem; margin-bottom: 6px; }
-  .info-card .ic-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; }
-  .info-card .ic-text strong { color: var(--text); font-weight: 500; }
-  .info-card .ic-price { color: var(--accent); font-weight: 500; font-size: 0.85rem; margin-top: 8px; }
-
-  .flight-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-    margin: 12px 0;
-  }
-  .flight-table th {
-    text-align: left;
-    color: var(--accent);
-    font-weight: 500;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .flight-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-muted);
-  }
-  .flight-table td strong { color: var(--text); font-weight: 500; }
-
-  .hotel-card {
-    background: var(--expand-bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 20px;
-    margin-top: 10px;
-  }
-  .hotel-card + .hotel-card { margin-top: 8px; }
-  .hotel-card .hotel-name { font-weight: 600; color: #fff; font-size: 0.95rem; margin-bottom: 4px; }
-  .hotel-card .hotel-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; }
-  .hotel-card .hotel-price { color: var(--accent); font-size: 0.85rem; margin-top: 4px; }
-
-  .tennis-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: #1a2a18; color: #7ee787;
-    font-size: 0.8rem; padding: 5px 12px; border-radius: 20px; margin-bottom: 12px;
-  }
-
-  .reservation-timeline {
-    position: relative;
-    padding-left: 24px;
-    border-left: 2px solid var(--accent);
-    margin: 20px 0;
-  }
-  .reservation-timeline .rt-item {
-    position: relative;
-    margin-bottom: 20px;
-    padding-left: 16px;
-  }
-  .reservation-timeline .rt-item::before {
-    content: '';
-    position: absolute;
-    left: -29px;
-    top: 6px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--accent);
-  }
-  .reservation-timeline .rt-time {
-    font-size: 0.8rem;
-    color: var(--accent);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .reservation-timeline .rt-item.urgent .rt-time { color: #f47067; }
-  .reservation-timeline .rt-item.urgent::before { background: #f47067; }
-  .reservation-timeline .rt-desc {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    line-height: 1.7;
-  }
-  .reservation-timeline .rt-desc strong { color: var(--text); font-weight: 500; }
-
-  /* ============ BOTTOM SECTIONS ============ */
-  .bottom-sections {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 0 24px;
-  }
-
-  .beach-list { margin-top: 12px; }
-  .beach-item {
-    display: flex; align-items: center; gap: 16px;
-    padding: 16px 0; border-bottom: 1px solid var(--border);
-  }
-  .beach-rank {
-    width: 32px; height: 32px; border-radius: 50%;
-    background: var(--tag-bg); color: var(--accent);
-    font-weight: 600; font-size: 0.85rem;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .beach-info h4 { color: #fff; font-size: 0.95rem; font-weight: 500; }
-  .beach-info p { color: var(--text-muted); font-size: 0.85rem; }
-
-  .tips-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
-  .tip-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
-  .tip-icon { font-size: 1.5rem; margin-bottom: 8px; }
-  .tip-title { font-weight: 600; color: #fff; font-size: 0.95rem; margin-bottom: 6px; }
-  .tip-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; }
-
-  .footer {
-    text-align: center; padding: 60px 24px; color: var(--text-dim);
-    font-size: 0.8rem; border-top: 1px solid var(--border); margin-top: 80px;
-  }
-
-  /* ============ RESPONSIVE ============ */
-  @media (max-width: 960px) {
-    .main-layout {
-      flex-direction: column-reverse;
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>France Trip 2026</title>
+  <style>
+    :root {
+      --bg: #101216;
+      --panel: #181b21;
+      --panel-2: #1d222a;
+      --card: #171a20;
+      --text: #f3efe6;
+      --muted: #b9b4aa;
+      --dim: #868177;
+      --line: rgba(255, 255, 255, 0.12);
+      --gold: #d2b36f;
+      --blue: #6da6d9;
+      --green: #9ab982;
+      --rose: #d99db5;
+      --terra: #c8795a;
+      --shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
     }
-    .map-panel {
-      width: 100%;
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+    }
+
+    a {
+      color: #ead8a2;
+      text-decoration-color: rgba(234, 216, 162, 0.45);
+      text-underline-offset: 3px;
+    }
+
+    .page {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 56px;
+    }
+
+    .hero {
+      min-height: 420px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: var(--shadow);
+      background:
+        linear-gradient(90deg, rgba(16, 18, 22, 0.88), rgba(16, 18, 22, 0.34)),
+        url("https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Pointe_Sainte-Hospice.jpg/1920px-Pointe_Sainte-Hospice.jpg") center/cover;
+    }
+
+    .hero-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 34px;
+      max-width: 780px;
+    }
+
+    .eyebrow {
+      color: var(--gold);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 500;
+      line-height: 1.12;
+    }
+
+    h1 { font-size: 3rem; }
+    h2 { font-size: 1.8rem; }
+    h3 { font-size: 1.35rem; }
+
+    .hero p {
+      margin: 14px 0 0;
+      color: var(--muted);
+      max-width: 680px;
+      font-size: 1rem;
+    }
+
+    .intro,
+    .day,
+    .card,
+    .check-section,
+    .tip-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin: 20px 0;
       position: sticky;
       top: 0;
-      height: 280px;
-      z-index: 100;
+      z-index: 20;
+      background: rgba(16, 18, 22, 0.92);
+      padding: 10px 0;
+      backdrop-filter: blur(10px);
     }
-    .map-container {
-      border-radius: 0 0 16px 16px;
-      padding: 12px 16px;
-    }
-    .map-container h3 { display: none; }
-    .map-info { display: none; }
-    .timeline-panel { padding-bottom: 200px; }
-  }
 
-  @media (max-width: 640px) {
-    .hero { height: 50vh; min-height: 360px; }
-    .hero-content { padding: 32px 24px; }
-    .hero h1 { font-size: 2.2rem; }
-    .overview { flex-direction: column; }
-    .tips-grid { grid-template-columns: 1fr; }
-    .timeline { padding-left: 40px; }
-    .day-dot { left: -40px; width: 28px; height: 28px; }
-  }
-</style>
+    .tab-button {
+      border: 1px solid var(--line);
+      background: #12151a;
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .tab-button.active {
+      color: var(--text);
+      border-color: rgba(210, 179, 111, 0.8);
+      background: rgba(210, 179, 111, 0.12);
+    }
+
+    .tab-panel[hidden] { display: none; }
+
+    .section-header {
+      margin: 28px 0 16px;
+    }
+
+    .section-header p {
+      margin: 8px 0 0;
+      color: var(--muted);
+    }
+
+    .intro {
+      border-left: 4px solid var(--gold);
+      padding: 18px 20px;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .intro strong { color: var(--text); }
+
+    .timeline {
+      display: grid;
+      gap: 18px;
+    }
+
+    .day {
+      padding: 20px;
+    }
+
+    .day-head {
+      display: grid;
+      grid-template-columns: 54px 1fr;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 16px;
+    }
+
+    .day-number {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(210, 179, 111, 0.55);
+      color: var(--gold);
+      font-weight: 750;
+    }
+
+    .day-date {
+      color: var(--gold);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .day-title { font-size: 1.55rem; }
+
+    .day-desc {
+      color: var(--muted);
+      margin: 8px 0 0;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      overflow: hidden;
+      background: var(--card);
+    }
+
+    .card.route { border-left: 4px solid var(--blue); }
+    .card.transport { border-left: 4px solid var(--blue); }
+    .card.lodging { border-left: 4px solid var(--green); }
+    .card.reco { border-left: 4px solid var(--gold); }
+    .card.highlight { border-left: 4px solid var(--terra); }
+    .card.wedding { border-left: 4px solid var(--rose); }
+    .card.ops { border-left: 4px solid var(--green); }
+    .card.city-primer { border-left: 4px solid var(--gold); }
+    .card.full { grid-column: 1 / -1; }
+
+    .card img {
+      width: 100%;
+      height: 230px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-body {
+      padding: 16px;
+    }
+
+    .card-name {
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.18rem;
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+
+    .card-meta {
+      color: var(--dim);
+      font-size: 0.82rem;
+      margin-bottom: 10px;
+    }
+
+    .card-text {
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    .card-text strong { color: var(--text); }
+
+    .reco-sections {
+      display: grid;
+      gap: 14px;
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    .reco-section h4 {
+      margin: 0 0 7px;
+      color: var(--gold);
+      font-size: 0.76rem;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .reco-section ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .reco-section li + li {
+      margin-top: 7px;
+    }
+
+    .listen-guide {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .listen-guide-title {
+      color: var(--gold);
+      font-weight: 750;
+      margin-bottom: 6px;
+    }
+
+    .listen-guide p {
+      margin: 0 0 8px;
+    }
+
+    .listen-guide ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+    }
+
+    .listen-guide li {
+      margin: 6px 0;
+    }
+
+    .card.route a,
+    .card.reco a {
+      color: #ead8a2;
+      font-weight: 650;
+      text-decoration-color: rgba(234, 216, 162, 0.5);
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .quick-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--card);
+      padding: 16px;
+    }
+
+    .quick-title {
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.12rem;
+      margin-bottom: 8px;
+    }
+
+    .quick-kicker {
+      color: var(--gold);
+      font-size: 0.78rem;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+
+    .quick-card p,
+    .quick-card li {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .quick-card ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .ops-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .ops-block h4 {
+      margin: 0 0 8px;
+      color: var(--text);
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .ops-block ul {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .card.route .card-name {
+      font-size: 1.16rem;
+      margin-bottom: 14px;
+    }
+
+    .card.route .card-body > .card-meta,
+    .card.route .card-text,
+    .card.route .route-plan,
+    .card.route .route-section ul {
+      font-size: 0.92rem;
+      line-height: 1.68;
+    }
+
+    .card.route .card-body > .card-meta {
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .card.route .card-text {
+      margin: 0;
+    }
+
+    .route-plan {
+      display: grid;
+      gap: 12px;
+    }
+
+    .route-section {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .route-section.note {
+      border-color: rgba(210, 179, 111, 0.18);
+    }
+
+    .card.route .route-section h4 {
+      color: var(--gold);
+      font-size: 0.76rem;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+
+    .card.route .route-section ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .card.route .route-section li + li {
+      margin-top: 6px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      border: 1px solid rgba(210, 179, 111, 0.24);
+      color: #ead8a2;
+      background: rgba(210, 179, 111, 0.08);
+      border-radius: 999px;
+      padding: 2px 9px;
+      font-size: 0.76rem;
+    }
+
+    details {
+      grid-column: 1 / -1;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #14171d;
+      overflow: hidden;
+    }
+
+    details.card.collapsible-card {
+      grid-column: auto;
+      padding: 0;
+    }
+
+    details.card.collapsible-card.full { grid-column: 1 / -1; }
+
+    details.card.collapsible-card summary {
+      padding: 16px;
+      color: inherit;
+      font-weight: inherit;
+      display: block;
+      position: relative;
+    }
+
+    details.card.collapsible-card summary::after {
+      content: "+";
+      position: absolute;
+      right: 16px;
+      top: 18px;
+      color: var(--gold);
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    details.card.collapsible-card[open] summary::after { content: "-"; }
+
+    details.card.collapsible-card .card-summary {
+      padding-right: 28px;
+    }
+
+    details.card.collapsible-card .card-body {
+      padding-top: 0;
+    }
+
+    summary {
+      cursor: pointer;
+      padding: 13px 16px;
+      color: #ead8a2;
+      font-weight: 650;
+      list-style: none;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    .details-body {
+      color: var(--muted);
+      padding: 0 16px 16px;
+      font-size: 0.93rem;
+    }
+
+    ul {
+      padding-left: 18px;
+      margin: 8px 0;
+    }
+
+    li { margin: 4px 0; }
+
+    .checklist-grid,
+    .tips-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .check-section,
+    .tip-card {
+      padding: 18px;
+      background: var(--panel);
+    }
+
+    .check-section h3,
+    .tip-card h3 {
+      margin-bottom: 12px;
+    }
+
+    .check-item {
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 10px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .check-item:first-of-type { border-top: 0; }
+
+    .check-item input {
+      margin-top: 5px;
+      accent-color: var(--gold);
+    }
+
+    .check-item label {
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.94rem;
+    }
+
+    .check-item span {
+      display: block;
+      color: var(--dim);
+      margin-top: 2px;
+      font-size: 0.84rem;
+    }
+
+    .tip-card p {
+      color: var(--muted);
+      margin: 8px 0 0;
+      font-size: 0.93rem;
+    }
+
+    @media (max-width: 820px) {
+      .page { width: min(100% - 20px, 1120px); padding-top: 10px; }
+      .hero { min-height: 380px; }
+      .hero-content { padding: 24px; }
+      h1 { font-size: 2.2rem; }
+      .cards,
+      .checklist-grid,
+      .tips-grid,
+      .quick-grid,
+      .ops-grid {
+        grid-template-columns: 1fr;
+      }
+      .day { padding: 16px; }
+      .card.full { grid-column: auto; }
+      .card img { height: 210px; }
+    }
+
+    @media (max-width: 520px) {
+      .hero { min-height: 350px; }
+      .hero-content { padding: 20px; }
+      h1 { font-size: 1.9rem; }
+      .tabs { overflow-x: auto; }
+      .tab-button { white-space: nowrap; }
+      .day-head { grid-template-columns: 42px 1fr; gap: 10px; }
+      .day-number { width: 34px; height: 34px; }
+    }
+  </style>
 </head>
 <body>
-
-<div class="hero">
-  <div class="hero-img"></div>
-  <div class="hero-content">
-    <h1>南法婚礼之旅</h1>
-    <div class="subtitle">2026年9月16日 - 24日 &nbsp;/&nbsp; 图卢兹 · 卡尔卡松 · 婚礼 · 尼斯 · 蔚蓝海岸</div>
-  </div>
-</div>
-
-<div class="overview-section">
-  <div class="overview">
-    <div class="overview-item"><div class="label">天数</div><div class="value">9 天</div></div>
-    <div class="overview-item"><div class="label">城市</div><div class="value">3 座</div></div>
-    <div class="overview-item"><div class="label">交通</div><div class="value">火车 + 飞机</div></div>
-    <div class="overview-item"><div class="label">重头戏</div><div class="value">婚礼</div></div>
-  </div>
-
-  <!-- ============ FLIGHTS ============ -->
-  <div style="margin-bottom: 40px;">
-    <div class="section-header" style="text-align:center; padding-top:40px;">
-      <h2>航班方案</h2>
-      <p>从 San Carlos / SFO 出发，推荐 open jaw 联程票</p>
-    </div>
-    <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; overflow-x: auto;">
-      <table class="flight-table">
-        <thead>
-          <tr><th>航段</th><th>推荐方案</th><th>时间</th><th>价格参考</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>9/16 去程</strong></td>
-            <td>SFO → <strong>巴黎 CDG</strong>（法航/United 直飞）→ CDG 转 <strong>图卢兹 TLS</strong>（法航国内）</td>
-            <td>10h50m + 1h20m</td>
-            <td rowspan="2" style="vertical-align: middle;"><strong style="color:var(--accent);">往返约 $1,000-1,500</strong><br><span style="font-size:0.8rem;">Open jaw 联程票<br>行李直挂</span></td>
-          </tr>
-          <tr>
-            <td><strong>9/24 回程</strong></td>
-            <td><strong>尼斯 NCE</strong> → CDG（法航）→ CDG → <strong>SFO</strong>（法航/United 直飞）</td>
-            <td>联程约 14h</td>
-          </tr>
-          <tr>
-            <td><strong>9/20 内部</strong></td>
-            <td><strong>easyJet 直飞</strong> TLS → NCE（官网单独购票）</td>
-            <td>1h05m</td>
-            <td><strong style="color:var(--accent);">€26-94 单程</strong><br><span style="font-size:0.8rem;">不含托运行李</span></td>
-          </tr>
-        </tbody>
-      </table>
-      <div style="margin-top: 16px; font-size: 0.85rem; color: var(--text-muted); line-height: 1.8;">
-        <strong style="color:var(--text);">购票建议：</strong><br>
-        • 国际段在 <strong>法航官网</strong> 或 Google Flights 买 open jaw（去 TLS / 回 NCE），行李直挂<br>
-        • 内部段在 <strong>easyjet.com</strong> 单独买，注意廉航行李费另计<br>
-        • SFO → CDG 每天2-3班直飞（法航 AF81/83/85 + United UA990）<br>
-        • 9月旺季尾声，<strong>建议尽早订票</strong>
+  <main class="page">
+    <section class="hero" aria-label="France trip overview">
+      <div class="hero-content">
+        <div class="eyebrow">September 15-24, 2026</div>
+        <h1>France Wedding Trip</h1>
+        <p>Toulouse 本地吃喝、Piano aux Jacobins、Château de Goudourville 婚礼周末，再接 Nice 三晚海岸线。</p>
       </div>
-    </div>
-  </div>
-</div>
+    </section>
 
-<!-- ============ MAIN: TIMELINE + MAP ============ -->
-<div class="main-layout">
-  <div class="timeline-panel">
-    <div class="section-header">
-      <h2>行程安排</h2>
-      <p>图卢兹 → 卡尔卡松 → 婚礼 → 尼斯 → 蔚蓝海岸</p>
-    </div>
+    <nav class="tabs" role="tablist" aria-label="行程页面">
+      <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-quick" data-tab="panel-quick">Quick Access</button>
+      <button class="tab-button active" type="button" role="tab" aria-selected="true" aria-controls="panel-itinerary" data-tab="panel-itinerary">行程安排</button>
+      <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-checklist" data-tab="panel-checklist">计划 Checklist</button>
+      <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-tips" data-tab="panel-tips">预订与贴士</button>
+    </nav>
 
-    <div class="timeline">
-
-      <!-- DAY 1 -->
-      <div class="day" data-city="toulouse" data-day="1">
-        <div class="day-dot">1</div>
-        <div class="day-date">9月16日 周二</div>
-        <div class="day-title">抵达图卢兹</div>
-        <div class="day-desc">La Ville Rose — 玫瑰之城。安顿下来，开始探索。</div>
-
-        <div class="city-intro">
-          <div class="city-intro-title">关于图卢兹 Toulouse</div>
-          法国第四大城市，因粉红色赤陶砖建筑得名<strong>"玫瑰之城"（La Ville Rose）</strong>。这里是欧洲航空航天中心——<strong>Airbus 总部</strong>就在城郊。图卢兹有着两千多年历史，罗马时代就是高卢的重要城市。中世纪时期是朗格多克地区的首都，至今保留着大量哥特式和文艺复兴建筑。这里也是法国西南部的美食之都，<strong>cassoulet（白豆炖肉）</strong>和<strong>鹅肝</strong>都发源于此区域。九月的图卢兹气温宜人（20-25°C），多个文化节同期进行——<strong>Piano aux Jacobins</strong> 钢琴音乐节和当代艺术节都在这个月。
-        </div>
-
-        <div class="spot-card">
-          <img class="spot-img" src="https://images.unsplash.com/photo-1603061624411-b00e91289a59?w=800&q=80" alt="图卢兹">
-          <div class="spot-body">
-            <div class="spot-name">图卢兹概览</div>
-            <div class="spot-meta">奥克西塔尼大区，南法</div>
-            <div class="spot-text">法国第四大城市，因粉红色赤陶砖建筑得名"玫瑰之城"。欧洲航空航天中心（Airbus 总部）。九月有多个文化节同期进行，是最好的季节之一。</div>
-          </div>
-        </div>
-        <details>
-          <summary>傍晚：到达后去哪逛</summary>
-          <div class="expand-content">
-            <ul>
-              <li><strong>Place du Capitole</strong> — 市中心大广场，Capitole 建筑在傍晚灯光下特别漂亮</li>
-              <li><strong>Pont Neuf 看日落</strong> — 加龙河上最古老的桥，粉色砖墙在黄昏时"发光"</li>
-              <li><strong>Les Carmes 区</strong> — 晚上最热闹的街区，彩色建筑、弯曲小巷、小广场全是酒吧餐厅</li>
-            </ul>
-          </div>
-        </details>
-        <details>
-          <summary>晚餐：第一晚吃什么</summary>
-          <div class="expand-content">
-            <ul>
-              <li><strong>Au Pere Louis</strong> — 1889年开业的老酒馆，点 <strong>quinquina</strong>（金鸡纳树皮加强酒，图卢兹独有），配芝士/熟肉拼盘</li>
-              <li><strong>L'Arpete</strong>（Carmes 区）— bistronomic + 自然酒，氛围很好</li>
-              <li>或者直接去 Les Carmes 随便逛，看哪家顺眼进哪家</li>
-            </ul>
-          </div>
-        </details>
-        <details>
-          <summary>住宿推荐：图卢兹特色酒店</summary>
-          <div class="expand-content">
-            <div class="hotel-card">
-              <div class="hotel-name">Hôtel du Grand Balcon ⭐⭐⭐⭐</div>
-              <div class="hotel-desc">1856年新古典建筑，历史纪念建筑。<strong>《小王子》作者圣-埃克苏佩里</strong>当年常住32号房——航空黄金时代的传奇酒店，Capitole 广场旁。最有故事感的选择。</div>
-              <div class="hotel-price">€150-250/晚</div>
-            </div>
-            <div class="hotel-card">
-              <div class="hotel-name">La Cour des Consuls Hotel & Spa (MGallery) ⭐⭐⭐⭐⭐</div>
-              <div class="hotel-desc">18世纪历史建筑改建，老城中心，有 SPA。图卢兹最豪华的精品酒店。</div>
-              <div class="hotel-price">€200-350/晚</div>
-            </div>
-            <div class="hotel-card">
-              <div class="hotel-name">Grand Hôtel de l'Opéra ⭐⭐⭐⭐</div>
-              <div class="hotel-desc">始于1359年的圣马夏尔学院改建，直接面对市政广场（Place du Capitole）。位置无敌。</div>
-              <div class="hotel-price">€180-300/晚</div>
-            </div>
-          </div>
-        </details>
+    <section class="tab-panel" id="panel-quick" role="tabpanel" hidden>
+      <div class="section-header">
+        <h2>Quick Access</h2>
+        <p>旅行当天最常用的信息放这里；票据和证件原件仍以手机离线文件为准。</p>
       </div>
 
-      <!-- DAY 2 -->
-      <div class="day" data-city="toulouse" data-day="2">
-        <div class="day-dot">2</div>
-        <div class="day-date">9月17日 周三</div>
-        <div class="day-title">探索图卢兹</div>
-        <div class="day-desc">市场、美食、街区 — 一整天刚刚好。</div>
-        <div class="spot-card">
-          <img class="spot-img" src="https://images.unsplash.com/photo-1771578742735-36009188c207?w=800&q=80" alt="法国市场">
-          <div class="spot-body">
-            <div class="spot-name">维克多·雨果市场</div>
-            <div class="spot-meta">周二至周日早上 • Place Victor Hugo</div>
-            <div class="spot-text">
-              南法最好的室内市场之一，100+摊位。<strong>重点是二楼的餐厅</strong>——直接用楼下食材做午饭（只做午市）。<br><br>
-              <strong>L'Imperiale</strong>（1985年老店）和 <strong>Le Magret</strong> 最好。<strong>中午前到</strong>，不然要排很久。
-            </div>
-            <div class="tags">
-              <span class="tag">Cassoulet 白豆炖肉</span>
-              <span class="tag">图卢兹香肠</span>
-              <span class="tag">鹅肝</span>
-              <span class="tag">紫罗兰特产</span>
-            </div>
-          </div>
-        </div>
-        <details>
-          <summary>上午：市场 + 美食</summary>
-          <div class="expand-content">
-            <strong>必吃清单：</strong>
-            <ul>
-              <li><strong>Cassoulet</strong> — 白豆炖鸭腿香肠，图卢兹的灵魂菜</li>
-              <li><strong>Saucisse de Toulouse</strong> — 粗粒黑胡椒猪肉肠，盘成螺旋形。<strong>Maison Garcia</strong> 是最老牌的肉铺</li>
-              <li><strong>紫罗兰系列</strong> — 图卢兹特产。冰淇淋、糖果、巧克力、芥末都有</li>
-            </ul>
-          </div>
-        </details>
-        <details>
-          <summary>下午：逛街区</summary>
-          <div class="expand-content">
-            <ul>
-              <li><strong>Couvent des Jacobins</strong> — 一棵"棕榈树"柱子撑起整个哥特式穹顶，建筑上非常震撼。九月有 <strong>Piano aux Jacobins</strong> 钢琴音乐节</li>
-              <li><strong>Saint-Cyprien</strong>（河对岸）— "图卢兹的布鲁克林"，画廊、独立小店、年轻人聚集地。沿河走可以看到 Dome de la Grave 的倒影</li>
-              <li><strong>Maison de la Violette</strong> — 停在 Canal du Midi 上的紫罗兰主题船，茶室+商店，买手信好地方</li>
-              <li><strong>Canal du Midi</strong> — UNESCO 世界遗产，散步或租自行车</li>
-            </ul>
-          </div>
-        </details>
-        <details>
-          <summary>晚上：酒吧推荐</summary>
-          <div class="expand-content">
-            <ul>
-              <li><strong>N5 Wine Bar</strong> — 20000+瓶酒，500+种杯卖，连续三年被评为全球最佳酒吧</li>
-              <li><strong>DAda</strong> — 自然酒/生物动力酒 + 另类音乐氛围</li>
-              <li><strong>Les Passionnes</strong> — 小众稀有酒款</li>
-            </ul>
-          </div>
-        </details>
-        <details>
-          <summary>九月图卢兹特别活动</summary>
-          <div class="expand-content">
-            <ul>
-              <li><strong>Piano aux Jacobins</strong> — 世界级钢琴音乐节，在 Jacobins 修道院里演出，九月整月</li>
-              <li><strong>Le Printemps de Septembre</strong> — 当代艺术节，全城25个场地</li>
-              <li><strong>Festival Occitania</strong> — 奥克西坦文化/语言/音乐/美食庆典</li>
-            </ul>
-          </div>
-        </details>
-        <details>
-          <summary>米其林餐厅：值得一试</summary>
-          <div class="expand-content">
-            <ul>
-              <li><strong>PY-R</strong> — ⭐⭐ 图卢兹最高星级餐厅，主厨 Pierre Lambinon。设计感十足的用餐空间。<strong>提前3-4周预订</strong></li>
-              <li><strong>Michel Sarran</strong> — ⭐ 经典图卢兹美食代表，周一至周五营业。电话 +33 5 61 12 32 32，<strong>提前几周预订</strong></li>
-            </ul>
-          </div>
-        </details>
-      </div>
-
-      <!-- DAY 3 -->
-      <div class="day" data-city="carcassonne" data-day="3">
-        <div class="day-dot">3</div>
-        <div class="day-date">9月18日 周四</div>
-        <div class="day-title">一日游：卡尔卡松</div>
-        <div class="day-desc">欧洲最大中世纪城堡城市。火车单程41分钟。</div>
-        <div class="transport">火车 • Toulouse Matabiau → Carcassonne • 41分钟直达</div>
-
-        <div class="city-intro">
-          <div class="city-intro-title">关于卡尔卡松 Carcassonne</div>
-          拥有<strong>2500年历史</strong>的城堡城市，是欧洲保存最完整、规模最大的中世纪防御工事。<strong>双层城墙、52座塔楼</strong>围绕着一座完整的中世纪城镇。城堡始建于罗马时代，经历了西哥特人、摩尔人和十字军的争夺。19世纪由建筑师 Viollet-le-Duc 主持修复，1997年被列为 <strong>UNESCO 世界遗产</strong>。卡尔卡松也自称是 <strong>cassoulet 的诞生地</strong>（图卢兹表示不同意）。这里还是朗格多克葡萄酒产区的中心，<strong>Corbieres</strong> 和 <strong>Minervois</strong> 红酒性价比极高。附近的 Limoux 产出的 <strong>Blanquette</strong> 被认为是世界上最古老的起泡酒，比香槟历史还要久。
+      <div class="quick-grid">
+        <div class="quick-card">
+          <div class="quick-kicker">Flights</div>
+          <div class="quick-title">航班确认号</div>
+          <ul>
+            <li><strong>BA 去程 Z4KYSK</strong><br>9/15 BA284 SFO → LHR；9/16 BA370 LHR → TLS，16:35 到 Toulouse。</li>
+            <li><strong>easyJet KCPCT44</strong><br>9/21 EJU1626 / U2 1626，TLS 12:20 → NCE 13:30；bag drop 10:20-11:20。</li>
+            <li><strong>BA 回程 Z6ITP9</strong><br>9/24 BA327 NCE T1 11:25 → LHR T5；BA287 LHR T5 14:30 → SFO 17:40。</li>
+          </ul>
         </div>
 
-        <div class="spot-card">
-          <img class="spot-img" src="https://images.unsplash.com/photo-1746540698979-d4a90ee6b558?w=800&q=80" alt="卡尔卡松">
-          <div class="spot-body">
-            <div class="spot-name">卡尔卡松城堡</div>
-            <div class="spot-meta">UNESCO 世界遗产 • 52座塔楼、双层城墙、2500年历史</div>
-            <div class="spot-text">
-              欧洲最大中世纪城堡城市。双层城墙、52座塔楼。傍晚灯亮后像走进中世纪的画里。<br><br>
-              <strong>提示：</strong>城墙内的餐厅大多是游客陷阱。<strong>去下城（Bastide Saint-Louis）吃饭</strong>，水平高很多。
-            </div>
-            <div class="tags">
-              <span class="tag">UNESCO</span>
-              <span class="tag">中世纪</span>
-              <span class="tag">Cassoulet 发源地</span>
-            </div>
-          </div>
-        </div>
-        <details>
-          <summary>看什么、玩什么</summary>
-          <div class="expand-content">
-            <ul>
-              <li><strong>走城墙</strong> — 必做。日落时分的光线最好</li>
-              <li><strong>Chateau Comtal</strong> — 城堡内的城堡，可以登塔看全景</li>
-              <li><strong>Basilique Saint-Nazaire</strong> — 罗马+哥特混合风格教堂，彩色玻璃窗</li>
-              <li><strong>Canal du Midi</strong> — 运河在下城经过，可以沿着走一段</li>
-            </ul>
-          </div>
-        </details>
-        <details>
-          <summary>必吃</summary>
-          <div class="expand-content">
-            <ul>
-              <li><strong>Cassoulet</strong> — 卡尔卡松号称是 cassoulet 的诞生地（图卢兹不同意）。在这里吃一次是必须的</li>
-              <li><strong>Blanquette de Limoux</strong> — 世界上最古老的起泡酒，比香槟历史还久，产自附近的 Limoux</li>
-              <li><strong>Corbieres / Minervois</strong> — 朗格多克地区红酒，性价比极高</li>
-            </ul>
-          </div>
-        </details>
-        <details>
-          <summary>米其林推荐：La Table de Franck Putelat ⭐⭐</summary>
-          <div class="expand-content">
-            卡尔卡松最顶级餐厅，2012年起持续米其林二星。位于城堡脚下，主厨称其料理为"古典虚构"。<br><br>
-            <ul>
-              <li>可通过 <strong>TheFork</strong> 在线预订</li>
-              <li>电话：+33 4 68 71 80 80</li>
-              <li>配套酒店 <strong>Hôtel Le Parc</strong> 可住宿+用餐一体</li>
-            </ul>
-            <br>
-            其他推荐：
-            <ul>
-              <li><strong>Agape</strong> — 隐藏小店，8道 tapas 品尝菜单仅约€25，性价比极高</li>
-              <li><strong>Brasserie à 4 Temps</strong> — Putelat 的副牌，更休闲，也要提前订</li>
-            </ul>
-          </div>
-        </details>
-      </div>
-
-      <!-- DAY 4 - WEDDING -->
-      <div class="day highlight" data-city="valence" data-day="4">
-        <div class="day-dot">4</div>
-        <div class="day-date">9月19日 周五</div>
-        <div class="day-title">婚礼日</div>
-        <div class="day-desc">重头戏。仪式约下午 2:30-3:00 开始。</div>
-        <div class="transport">火车 • Toulouse Matabiau → Valence d'Agen • 约1小时</div>
-
-        <div class="city-intro" style="border-left-color: var(--wedding-pink);">
-          <div class="city-intro-title" style="color: var(--wedding-pink);">关于 Valence d'Agen</div>
-          位于图卢兹西北约100公里的小镇，坐落在<strong>加龙河谷</strong>的农田和果园之间。这一带是法国西南乡村的精髓——连绵的向日葵田、中世纪石头农庄、小型酿酒庄。Valence d'Agen 本身以中世纪<strong>拱廊广场（Place des Arcades）</strong>闻名，始建于13世纪。小镇保留了法国乡村的宁静气息，是举办城堡婚礼的完美背景。附近有多座私人城堡可以用于婚礼活动，周围的葡萄园出产优质的<strong>Buzet</strong>和<strong>Brulhois</strong>产区红酒。
+        <div class="quick-card">
+          <div class="quick-kicker">Hotels</div>
+          <div class="quick-title">住宿确认</div>
+          <ul>
+            <li><strong>Hôtel Le Grand Balcon</strong><br>Toulouse，9/16-9/18，两晚；早餐未购买。</li>
+            <li><strong>Château de Goudourville</strong><br>9/18-9/20，两晚；重点确认车站接送。</li>
+            <li><strong>Hôtel SOCLO Toulouse</strong><br>9/20-9/21，check-in 16:00，checkout 12:00。</li>
+            <li><strong>Hôtel Palais de la Méditerranée</strong><br>Nice，9/21-9/24；confirmation <strong>42322645</strong>。</li>
+          </ul>
         </div>
 
-        <div class="spot-card" style="border-color: var(--accent);">
-          <div class="spot-body">
-            <div class="spot-name" style="font-size:1.3rem;">城堡婚礼</div>
-            <div class="spot-meta">Valence d'Agen • 仪式约下午2:30 • 有接驳车</div>
-            <div class="spot-text">
-              <strong>上午：</strong>买早上的火车票从图卢兹到 Valence d'Agen<br>
-              <strong>下午：</strong>城堡婚礼仪式（有接驳车从酒店到城堡，车程不到10分钟）<br>
-              <strong>晚上：</strong>晚宴在城堡<br>
-              <strong>住宿：</strong>Hotel Tout Va Bien（跟新人确认预留房间）或附近其他住宿，都在火车站步行范围内<br><br>
-              <em style="color:var(--accent)">小彩蛋：9月19-20日恰好是法国"遗产日"（Journees du Patrimoine），全国17000+古迹免费开放</em>
-            </div>
-          </div>
+        <div class="quick-card">
+          <div class="quick-kicker">Tickets</div>
+          <div class="quick-title">票据与链接</div>
+          <ul>
+            <li><a href="https://lynnandguillaume.netlify.app/#travel" target="_blank" rel="noopener">婚礼请帖 / RSVP / travel info</a></li>
+            <li><a href="https://www.chateau-goudourville.fr/en" target="_blank" rel="noopener">Château de Goudourville 官网</a></li>
+            <li><a href="https://pianojacobins.com/anna-petroa-forster" target="_blank" rel="noopener">Piano aux Jacobins 节目页</a></li>
+            <li><a href="file:///Users/josephchen/Downloads/ticketdirect-1.pdf">Piano 票 PDF，本机离线链接</a><br>公网页面不会上传票；手机也单独存一份。</li>
+            <li><a href="https://www.google.com/maps" target="_blank" rel="noopener">Google Maps 总入口</a><br>路线卡和打卡卡里的地名/店名也都能点进 Maps。</li>
+          </ul>
+        </div>
+
+        <div class="quick-card">
+          <div class="quick-kicker">Emergency</div>
+          <div class="quick-title">本地紧急电话</div>
+          <ul>
+            <li><strong>112</strong>：欧盟通用紧急电话</li>
+            <li><strong>15</strong>：急救 / SAMU</li>
+            <li><strong>17</strong>：警察</li>
+            <li><strong>18</strong>：消防</li>
+            <li>酒店前台和婚礼联系人电话出发前建议另存到手机通讯录。</li>
+          </ul>
+        </div>
+
+        <div class="quick-card">
+          <div class="quick-kicker">Must Confirm</div>
+          <div class="quick-title">最容易出问题的三件事</div>
+          <ul>
+            <li>9/18 <strong>Toulouse → Valence d'Agen</strong> 火车票。</li>
+            <li>9/18 <strong>Valence d'Agen → Château</strong> taxi / 婚礼接送。</li>
+            <li>9/20 brunch 后 <strong>Château → Valence d'Agen / Toulouse</strong> 离开方式。</li>
+          </ul>
+        </div>
+
+        <div class="quick-card">
+          <div class="quick-kicker">Docs</div>
+          <div class="quick-title">证件与离线备份</div>
+          <ul>
+            <li>中国护照、美国绿卡、法国申根签证、旅行保险。</li>
+            <li>BA / easyJet app、酒店确认、Piano PDF、婚礼请帖全部离线保存。</li>
+            <li>LHR 转机规则出发前按 BA 和英国官方页面再核对一次。</li>
+          </ul>
         </div>
       </div>
+    </section>
 
-      <!-- DAY 5 -->
-      <div class="day" data-city="nice" data-day="5">
-        <div class="day-dot">5</div>
-        <div class="day-date">9月20日 周六</div>
-        <div class="day-title">早午餐 → 飞尼斯</div>
-        <div class="day-desc">上午城堡早午餐，傍晚到达蔚蓝海岸。</div>
-        <div class="transport">接驳车去 brunch • 火车回图卢兹 • 飞尼斯约1.5小时</div>
+    <section class="tab-panel" id="panel-itinerary" role="tabpanel">
+      <div class="section-header">
+        <h2>行程安排</h2>
+        <p>图卢兹 → Château de Goudourville → 尼斯 → 蔚蓝海岸</p>
+      </div>
 
-        <div class="city-intro">
-          <div class="city-intro-title">关于尼斯 Nice</div>
-          <strong>蔚蓝海岸（Cote d'Azur）的首都</strong>，法国第五大城市。尼斯的历史可以追溯到公元前350年的古希腊殖民地 <strong>Nikaia</strong>。19世纪起成为欧洲贵族的冬季度假胜地，英国维多利亚女王、俄国沙皇都是常客——著名的<strong>英国人漫步大道（Promenade des Anglais）</strong>就因此得名。尼斯有自己独特的<strong>"尼萨尔"方言和饮食文化</strong>，深受意大利影响（1860年才并入法国）。标志性美食包括 <strong>socca</strong>（鹰嘴豆薄饼）、<strong>pissaladiere</strong>（洋葱鳀鱼饼）、<strong>salade nicoise</strong>。九月是蔚蓝海岸最好的季节：<strong>海水全年最暖（23-24°C）</strong>，夏季人潮已退，天气完美。<strong>马蒂斯</strong>和<strong>夏加尔</strong>都选择在这里度过晚年，留下了两座精彩的美术馆。
-        </div>
+      <div class="intro">
+        <strong>行程亮点：</strong>图卢兹段留给 Les Carmes、Victor Hugo Market、Garonne 河边和 Jacobins 修道院钢琴音乐会；婚礼周末完整留在 Château de Goudourville；9/20 brunch 后回 Toulouse 缓冲；9/21 中午飞 Nice，尼斯三晚只抓 Nice 本城、Eze、Villefranche / Cap Ferrat，不排 Monaco。
+      </div>
 
-        <div class="spot-card">
-          <img class="spot-img" src="https://images.unsplash.com/photo-1490113355845-cdc3b65f0189?w=800&q=80" alt="尼斯">
-          <div class="spot-body">
-            <div class="spot-name">抵达尼斯</div>
-            <div class="spot-meta">蔚蓝海岸 • 海水 23-24°C • 气温 22-25°C</div>
-            <div class="spot-text">
-              到达后直奔 <strong>Vieux Nice</strong>（老城），Cours Saleya 附近晚上依然热闹。<br><br>
-              九月是蔚蓝海岸最好的时间：海水全年最暖（23-24°C），夏季人潮已退，天气完美。
+      <div class="timeline">
+        <article class="day">
+          <div class="day-head">
+            <div class="day-number">1</div>
+            <div>
+              <div class="day-date">9月16日 周三</div>
+              <h3 class="day-title">抵达 Toulouse</h3>
+              <p class="day-desc">倒时差友好的第一晚：入住 Le Grand Balcon，慢走 Capitole 和 Les Carmes。</p>
             </div>
           </div>
-        </div>
-        <details>
-          <summary>第一晚晚餐：尼斯老城</summary>
-          <div class="expand-content">
-            <strong>必吃尼斯特色：</strong>
-            <ul>
-              <li><strong>Socca</strong> — 鹰嘴豆薄饼，柴火烤的</li>
-              <li><strong>Pissaladiere</strong> — 洋葱鳀鱼饼</li>
-              <li><strong>Pan Bagnat</strong> — 尼斯版三明治</li>
-              <li><strong>Salade Nicoise</strong> — 在发源地吃正宗的</li>
-              <li><strong>炸西葫芦花</strong> — 当地特色</li>
-            </ul>
-            <br>
-            <strong>去哪吃：</strong>
-            <ul>
-              <li><strong>Chez Pipo</strong> — 全尼斯最好的 socca，300年柴火烤炉，只收现金</li>
-              <li><strong>Lou Pilha Leva</strong>（老城中心广场）— 经典尼斯小吃摊，露天大排档风格</li>
-              <li><strong>La Merenda</strong> — 没电话、不接预约的小馆子，正宗尼斯家常菜，碰运气直接去</li>
-              <li><strong>Chez Rene Socca</strong> — 传奇级别，分量大，拱廊下的露天座位</li>
-            </ul>
-          </div>
-        </details>
-        <details>
-          <summary>住宿推荐：尼斯特色酒店</summary>
-          <div class="expand-content">
-            <div class="hotel-card">
-              <div class="hotel-name">Hôtel du Couvent ⭐⭐⭐⭐⭐ (2024新开)</div>
-              <div class="hotel-desc">17世纪修道院改建，Luxury Collection 品牌。城堡山上，有<strong>梯田花园、全景泳池、罗马浴场</strong>。尼斯最特别的新酒店。</div>
-              <div class="hotel-price">€400-700+/晚</div>
-            </div>
-            <div class="hotel-card">
-              <div class="hotel-name">La Pérouse ⭐⭐⭐⭐</div>
-              <div class="hotel-desc"><strong>嵌入城堡山崖壁</strong>，俯瞰天使湾，加热户外泳池。位置无敌、极其安静。经典之选。</div>
-              <div class="hotel-price">€200-400/晚</div>
-            </div>
-            <div class="hotel-card">
-              <div class="hotel-name">Hôtel Rossetti ⭐⭐⭐</div>
-              <div class="hotel-desc">老城心脏位置，距尼斯大教堂27米，有教堂景观露台早餐。<strong>性价比最佳。</strong></div>
-              <div class="hotel-price">€150-250/晚</div>
-            </div>
-          </div>
-        </details>
-        <details>
-          <summary>米其林餐厅：尼斯 + Menton</summary>
-          <div class="expand-content">
-            <ul>
-              <li><strong>Mirazur</strong>（Menton）— ⭐⭐⭐ 2019世界第一。<strong style="color:#f47067;">现在就要订！</strong> 至少提前2-3月。工作日午餐有 €47 prix-fixe，最容易订到。官网 mirazur.fr 或 Resy</li>
-              <li><strong>Flaveur</strong> — ⭐⭐ 尼斯唯一二星，仅20座。人均约€320。提前1-2月订</li>
-              <li><strong>Restaurant JAN</strong> — ⭐ 南非主厨，仅20座，需押金。提前1-2月订</li>
-              <li><strong>La Merenda</strong> — 无电话无网上预订！只能<strong>亲自到店登记</strong>。到尼斯第一天就去订后几天的位。仅周二至周五营业，只收现金</li>
-            </ul>
-          </div>
-        </details>
-      </div>
 
-      <!-- DAY 6 -->
-      <div class="day" data-city="villefranche" data-day="6">
-        <div class="day-dot">6</div>
-        <div class="day-date">9月21日 周日</div>
-        <div class="day-title">尼斯 + Villefranche-sur-Mer</div>
-        <div class="day-desc">上午逛老城，下午去蔚蓝海岸最美的港湾。</div>
+          <div class="cards">
+            <div class="card city-primer full">
+              <div class="card-body">
+                <div class="card-name">Toulouse 速写</div>
+                <div class="card-meta">粉砖、鸭油、飞机</div>
+                <div class="card-text">图卢兹白天是玫瑰色老城，晚上是 Les Carmes 的酒馆小街；同一座城既有 cassoulet 西南炖菜和紫罗兰糖，也有 Airbus 总部和早期航空邮政故事。Saint-Exupéry，也就是《小王子》的作者，年轻时就和这里的航空邮政圈有关。这里不要赶景点，最地道的玩法是市场午餐、河边散步、晚上在修道院里听钢琴。</div>
+              </div>
+            </div>
+            <details class="card route collapsible-card full">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">路线 / 时间 / 执行</div>
+                  <div class="card-meta">TLS（Toulouse-Blagnac 机场）→ Le Grand Balcon（Capitole 旁酒店）→ Place du Capitole（市政厅广场）→ Les Carmes（老城餐酒街区）</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="route-plan">
+                  <section class="route-section">
+                    <h4>16:35 抵达 Toulouse</h4>
+                    <ul>
+                      <li><strong>Toulouse-Blagnac Airport</strong> 是图卢兹主机场；入境、取行李后直接进市区。</li>
+                      <li>机场到 <strong>Le Grand Balcon</strong> 可打车，第一天不要为了省一点交通费折腾公共交通。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>傍晚 入住 + 市中心第一眼</h4>
+                    <ul>
+                      <li><strong>Le Grand Balcon</strong> 在 Capitole 核心区，先办理入住、放行李、简单恢复。</li>
+                      <li>步行到 <strong>Place du Capitole</strong>，这是 Toulouse 市政厅广场，也是老城最直接的第一印象。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>晚上 Les Carmes</h4>
+                    <ul>
+                      <li>从 <strong>Esquirol</strong> 沿 <strong>Rue des Filatiers / Rue Pharaon</strong> 慢慢走到 <strong>Les Carmes</strong>。</li>
+                      <li><strong>Les Carmes</strong> 是餐厅、wine bar 和 cocktail bar 很密的老城街区；晚餐加一杯酒即可。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section note">
+                    <h4>预约 / 营业 / 注意</h4>
+                    <ul>
+                      <li><strong>Le Grand Balcon</strong> 已订 9/16-9/18；早餐未购买。</li>
+                      <li>第一晚餐厅不强制；<strong>Le Genty Magre</strong> / <strong>L'Heure du Singe</strong> 可以当天按体力调整。</li>
+                      <li>今晚目标是恢复，不要为了多打卡牺牲睡眠。</li>
+                    </ul>
+                  </section>
+                </div>
+              </div>
+            </details>
 
-        <div class="city-intro">
-          <div class="city-intro-title">关于 Villefranche-sur-Mer</div>
-          距离尼斯仅<strong>火车6分钟</strong>的梦幻小港湾。这个14世纪的小渔村藏在陡峭山崖与碧蓝海水之间，是蔚蓝海岸最上镜的地方之一。<strong>彩色房子直接"掉进"碧绿海水里</strong>，港湾因地形原因水面极为平静。村里的 <strong>Rue Obscure</strong> 是一条13世纪的有顶石头街道，曾被用作二战时期的防空洞。<strong>Jean Cocteau</strong> 深爱这里，亲手为港口边的 <strong>Chapelle Saint-Pierre</strong> 绘制了壁画。<strong>Plage des Marinieres</strong> 是蔚蓝海岸最好的沙滩之一——尼斯本身是石子滩，而这里是细沙，水清见底。
-        </div>
+            <div class="card highlight">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Toulouse_Capitole_Night_Wikimedia_Commons.jpg/1920px-Toulouse_Capitole_Night_Wikimedia_Commons.jpg" alt="Toulouse Capitole night">
+              <div class="card-body">
+                <div class="card-name">Highlight：Les Carmes 夜晚街区</div>
+                <div class="card-meta">老城南侧 • 小街、bistro、wine bar、cocktail bar</div>
+                <div class="card-text"><strong>Les Carmes</strong> 是 Toulouse 老城里最适合第一晚落地的街区：不需要“看景点”，而是走进一组粉砖小街、餐馆、酒吧和小广场。它比 Capitole 更像本地人晚上会去的地方，街区密度高但不压迫；倒时差时只要找一顿 bistro、饭后走两条街，就能把 Toulouse 的节奏摸到。</div>
+              </div>
+            </div>
 
-        <div class="spot-card">
-          <img class="spot-img" src="https://images.unsplash.com/photo-1490113355845-cdc3b65f0189?w=800&q=80" alt="尼斯老城">
-          <div class="spot-body">
-            <div class="spot-name">上午：尼斯老城</div>
-            <div class="spot-meta">Vieux Nice • Cours Saleya 市场（周日有）</div>
-            <div class="spot-text">
-              <strong>Colline du Chateau</strong>（城堡山）— 俯瞰老城 + 天使湾 + 整个海岸线的最佳全景。有电梯可以上。<br><br>
-              <strong>Cours Saleya 市场</strong> — 鲜花+食材市场。逛完去 Place Rossetti 的 <strong>Fenocchio</strong> 吃冰淇淋，几十种口味。
-            </div>
+            <details class="card reco collapsible-card">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">打卡 / 吃喝</div>
+                  <div class="card-meta">Les Carmes 第一晚：预约一顿正餐，再按体力加 cocktail。</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="reco-sections">
+                  <div class="reco-section">
+                    <h4>正餐</h4>
+                    <ul>
+                      <li><strong>Le Genty Magre</strong> — 第一晚“正式但不累”的西南法国 bistro；适合鸭、鹅肝、cassoulet 这条线，建议订 20:00 左右。</li>
+                      <li><strong>L'Heure du Singe</strong> — cocktail bar + 小盘晚餐；如果还在倒时差、不想吃太重，选它更灵活。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>饭后一杯</h4>
+                    <ul>
+                      <li><strong>Nasdrovia</strong> — 更当代的 cocktail 选择，适合一杯季节鸡尾酒后回酒店。</li>
+                      <li><strong>Au Père Louis</strong> — 1889 年老酒馆，适合老派图卢兹氛围；把它当最后一小杯，不当完整晚餐。</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <details class="card lodging collapsible-card full">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">住宿 Highlight：Hôtel Le Grand Balcon</div>
+                  <div class="card-meta">9/16-9/18 两晚 • Capitole 核心区 • Aéropostale / Saint-Exupéry 记忆点</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="card-text"><strong>Le Grand Balcon</strong> 的特别之处是它把“住在市中心”和 Toulouse 的航空历史连在一起。20 世纪早期 Aéropostale 飞行员从 Toulouse 起飞，把邮件航线推向西班牙、非洲和南美；Saint-Exupéry、Mermoz 这些飞行员都和这里有关。酒店保留/复原了 Saint-Exupéry 记忆点的 32 号房气质，所以它不是普通四星商务酒店，而是住在 Capitole 旁边的“航空时代小注脚”。实际价值也很强：第一晚不用通勤，第二天 Jacobins、Victor Hugo 市场、Garonne 河边都能步行串起来。</div>
+              </div>
+            </details>
           </div>
-        </div>
-        <div class="spot-card">
-          <img class="spot-img" src="https://images.unsplash.com/photo-1703152792682-a1fe5f3dedb4?w=800&q=80" alt="Villefranche-sur-Mer">
-          <div class="spot-body">
-            <div class="spot-name">下午：Villefranche-sur-Mer</div>
-            <div class="spot-meta">火车6分钟 • 每20-30分钟一班</div>
-            <div class="spot-text">
-              蔚蓝海岸最美的小港湾。彩色房子直接掉进碧绿海水里。<br><br>
-              <strong>Plage des Marinieres</strong> — 蔚蓝海岸最好的沙滩之一（尼斯本身是石子滩！）。水清见底，有防水母网和救生员。<br><br>
-              <strong>Chapelle Saint-Pierre</strong> — Jean Cocteau 手绘装饰的小教堂。<strong>Citadelle Saint-Elme</strong> 城墙上看海景。
-            </div>
-            <div class="tags">
-              <span class="tag">沙滩</span>
-              <span class="tag">碧绿海水</span>
-              <span class="tag">离尼斯6分钟</span>
-            </div>
-          </div>
-        </div>
-        <details>
-          <summary>晚餐：Villefranche 推荐</summary>
-          <div class="expand-content">
-            <ul>
-              <li><strong>La Mere Germaine</strong> — 海景位老牌海鲜餐厅，有点贵但值得</li>
-              <li><strong>La Caravelle</strong> — 本地食材，食材来自老板家的农场</li>
-            </ul>
-            九月建议提前订位，特别是海景桌。
-          </div>
-        </details>
-        <details>
-          <summary>备选：Cap Ferrat 半岛</summary>
-          <div class="expand-content">
-            和 Villefranche 紧挨着，如果更想走路而不是躺海滩：
-            <ul>
-              <li><strong>海岸步道</strong>（8.5km环线）— 大部分平路，风景绝美</li>
-              <li><strong>Villa Ephrussi de Rothschild</strong> — 粉色别墅 + 9个主题花园俯瞰海湾</li>
-              <li><strong>Paloma Beach</strong> — 小海湾，Cap Ferrat 最美的沙滩</li>
-            </ul>
-          </div>
-        </details>
-        <details>
-          <summary>如果想住一晚 Villefranche</summary>
-          <div class="expand-content">
-            <div class="hotel-card">
-              <div class="hotel-name">Welcome Hotel ⭐⭐⭐⭐ — 强烈推荐</div>
-              <div class="hotel-desc">35间房<strong>全部海景带阳台</strong>，评分9.4。老城海港正中央，有葡萄酒吧和全景露台。体验 Villefranche 小镇魅力的最佳选择。</div>
-              <div class="hotel-price">€200-400/晚</div>
+        </article>
+
+        <article class="day">
+          <div class="day-head">
+            <div class="day-number">2</div>
+            <div>
+              <div class="day-date">9月17日 周四</div>
+              <h3 class="day-title">Victor Hugo Market、Garonne + Piano aux Jacobins</h3>
+              <p class="day-desc">图卢兹最值得的一天：市场午餐、河边黄昏、修道院里的钢琴音乐会。</p>
             </div>
           </div>
-        </details>
-      </div>
 
-      <!-- DAY 7 -->
-      <div class="day" data-city="eze" data-day="7">
-        <div class="day-dot">7</div>
-        <div class="day-date">9月22日 周一</div>
-        <div class="day-title">Eze 小村 + 摩纳哥</div>
-        <div class="day-desc">上午悬崖中世纪村落，下午超级游艇港。</div>
+          <div class="cards">
+            <details class="card route collapsible-card full">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">路线 / 时间 / 执行</div>
+                  <div class="card-meta">Le Grand Balcon（Capitole 旁酒店）→ Marché Victor Hugo（室内市场）→ Garonne / Saint-Cyprien（河边和河西街区）→ Cloître des Jacobins（修道院回廊）</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="route-plan">
+                  <section class="route-section">
+                    <h4>上午 慢起</h4>
+                    <ul>
+                      <li>今天不用早起赶景点，把倒时差的空间留出来。</li>
+                      <li>从 <strong>Le Grand Balcon</strong> 步行去 <strong>Marché Victor Hugo</strong>，路程短，不需要交通安排。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>11:45-12:00 Victor Hugo 午餐</h4>
+                    <ul>
+                      <li><strong>Marché Victor Hugo</strong> 是图卢兹市中心最重要的室内市场，楼下买菜，楼上餐厅用市场食材做午市。</li>
+                      <li>11:45 到最舒服；目标是吃西南法国方向：鸭、Toulouse sausage、鹅肝、cassoulet。</li>
+                      <li>cassoulet、鹅肝、鸭肉都是重菜，点一个主力 share 就好；晚上还有 Piano aux Jacobins，别中午吃到报废。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>下午 Garonne + Saint-Cyprien</h4>
+                    <ul>
+                      <li>沿 <strong>Garonne</strong>（加龙河）慢走，重点看粉砖老城和河岸光线。</li>
+                      <li>过河到 <strong>Saint-Cyprien</strong>，这是河西岸更本地、更年轻的街区，适合咖啡、自然酒和短暂停靠。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>19:15-20:00 Piano aux Jacobins</h4>
+                    <ul>
+                      <li>19:15-19:30 到 <strong>Cloître des Jacobins</strong>，也就是 Jacobins 修道院回廊。</li>
+                      <li>20:00 听 <strong>Piano aux Jacobins</strong>；座位是自由入座，19:15 到不是太早，是为了选座、看空间、让耳朵适应修道院回廊的混响。</li>
+                      <li>这个场地本身就是体验的一半，不要把它当普通音乐厅卡点进场。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section note">
+                    <h4>预约 / 营业 / 注意</h4>
+                    <ul>
+                      <li><strong>Marché Victor Hugo</strong> 官方时间：周二至周日 06:00-14:00，节假日含在内。</li>
+                      <li>Piano 票已买；PDF 要放手机离线文件。</li>
+                      <li>音乐会前晚餐不要排太重；喝酒放在 <strong>Café Manine</strong> 或 <strong>Les Carmes</strong> 周边的轻量备选，不专门跑单一 wine bar。</li>
+                    </ul>
+                  </section>
+                </div>
+              </div>
+            </details>
 
-        <div class="city-intro">
-          <div class="city-intro-title">关于 Eze & 摩纳哥</div>
-          <strong>Eze</strong> 是一座"鹰巢村"——整个村子建在海拔427米的悬崖顶上，从尼斯坐公交仅30分钟。村里的石头小巷、中世纪拱门和山顶的<strong>异国情调花园（Jardin Exotique）</strong>提供360度无死角的地中海全景。尼采曾在这里写下《查拉图斯特拉如是说》的部分章节，通往海边的山路至今叫做<strong>"尼采之路"</strong>。著名香水品牌 <strong>Fragonard</strong> 的工坊就在村里，可以免费参观。<br><br>
-          <strong>摩纳哥</strong>是仅次于梵蒂冈的世界第二小国，面积仅2平方公里。以 <strong>F1 大奖赛</strong>、<strong>蒙特卡洛赌场</strong>和密集的超级游艇闻名。但老城 <strong>Monaco-Ville</strong> 出人意料地像个安静的地中海小村，窄巷和糖果色房子很有味道。悬崖上的<strong>海洋博物馆</strong>由 Jacques Cousteau 主导建设，建筑和展品都很好。
-        </div>
-
-        <div class="spot-card">
-          <img class="spot-img" src="https://images.unsplash.com/photo-1719813917770-204f8a4ad04c?w=800&q=80" alt="Eze">
-          <div class="spot-body">
-            <div class="spot-name">上午：Eze 山顶村</div>
-            <div class="spot-meta">从尼斯坐公交 #82/#602 约30分钟 • 约1.70欧</div>
-            <div class="spot-text">
-              悬崖上的中世纪小村，不是噱头，是真的很美。<br><br>
-              <strong>Jardin Exotique</strong> — 山顶仙人掌花园，360度无死角俯瞰地中海。这是精华，不要跳过。<br><br>
-              <strong>Parfumerie Fragonard</strong> — 免费参观香水工坊。2-2.5小时够逛完整个村子。
+            <div class="card highlight">
+              <img src="assets/victor-hugo-market.jpg" alt="Marché Victor Hugo seafood stall in Toulouse">
+              <div class="card-body">
+                <div class="card-name">Highlight：Marché Victor Hugo 午餐</div>
+                <div class="card-meta">周二至周日早上 • Place Victor Hugo • 二楼午餐是重点</div>
+                <div class="card-text"><strong>Marché Victor Hugo</strong> 不是只买菜的市场，而是 Toulouse 最好理解西南法国饮食的地方：楼下是肉铺、奶酪、海鲜、熟食和紫罗兰甜品，楼上餐厅直接用楼下摊位食材做午市。它的好玩点在“市场和餐厅没有断开”：你看到的鸭肉、Toulouse sausage、鹅肝、cassoulet，很快就会变成楼上的盘子。</div>
+                <div class="tags">
+                  <span class="tag">Cassoulet</span>
+                  <span class="tag">Toulouse sausage</span>
+                  <span class="tag">鹅肝</span>
+                  <span class="tag">紫罗兰特产</span>
+                </div>
+              </div>
             </div>
-            <div class="tags">
-              <span class="tag">中世纪村庄</span>
-              <span class="tag">全景观</span>
-              <span class="tag">香水工坊</span>
+
+            <div class="card highlight">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Les_Jacobins_depuis_la_Garonne_-_panoramio.jpg/1920px-Les_Jacobins_depuis_la_Garonne_-_panoramio.jpg" alt="Garonne river and Jacobins">
+              <div class="card-body">
+                <div class="card-name">Highlight：Garonne + Saint-Cyprien 黄昏</div>
+                <div class="card-meta">Daurade（河边广场）→ Pont Neuf（老桥）→ Port de Viguerie（河西观景点）</div>
+                <div class="card-text">这段的价值在光线和城市尺度。Toulouse 的粉砖建筑下午会变暖，<strong>Daurade</strong> 河边广场到 <strong>Pont Neuf</strong> 老桥这一段最适合慢走；过桥到 <strong>Port de Viguerie</strong> 后，回头看老城、Jacobins 和 <strong>Dôme de la Grave</strong> 的穹顶，会比在老城内部更能理解“玫瑰之城”的颜色。<strong>Saint-Cyprien</strong> 也更日常，咖啡、自然酒和小店比主广场少一点游客感。</div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div class="spot-card">
-          <img class="spot-img" src="https://images.unsplash.com/photo-1752884991294-cd424478903a?w=800&q=80" alt="摩纳哥">
-          <div class="spot-body">
-            <div class="spot-name">下午：摩纳哥</div>
-            <div class="spot-meta">从尼斯坐火车23分钟 • 约4欧 • 每20-30分钟一班</div>
-            <div class="spot-text">
-              不需要赌博也值得去。半天（3-4小时）完全够。<br><br>
-              <strong>Monaco-Ville 老城</strong> — 窄巷糖果色房子，像个真正的地中海小村<br>
-              <strong>海洋博物馆</strong> — 悬崖上的水族馆，建筑和内容都很好<br>
-              <strong>Port Hercule</strong> — 超级游艇停满港口，坐下来喝杯咖啡看风景<br>
-              <strong>Casino de Monte-Carlo</strong> — 门口拍个照就够了
+
+            <div class="card highlight full">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Toulouse_Couvent_des_Jacobins_Clo%C3%AEtre_4.jpg/1920px-Toulouse_Couvent_des_Jacobins_Clo%C3%AEtre_4.jpg" alt="Cloitre des Jacobins">
+              <div class="card-body">
+                <div class="card-name">Highlight：Piano aux Jacobins</div>
+                <div class="card-meta">20:00 • Cloître des Jacobins • Anna Petrova-Forster</div>
+                <div class="card-text">这场的重点不是“又看一个教堂”，而是把钢琴放进 Jacobins 修道院回廊的石材、拱廊和自然混响里。Piano aux Jacobins 本身就是 Toulouse 九月的标志性音乐节，空间感会改变听感：弱音、停顿和尾音会比普通音乐厅更有存在感。票是 Catégorie 1 - Assis / Placement Libre；19:15-19:30 到，给自己一点时间看空间、找座位、安静下来。</div>
+                <div class="listen-guide">
+                  <div class="listen-guide-title">听奏指南</div>
+                  <p><strong>曲目：</strong>Voříšek: Impromptus op. 7 n°1, n°2, n°4, n°5；Rhapsodies op. 1 n°9, n°3。Schubert: Sonata in A minor D845。<a href="https://pianojacobins.com/anna-petroa-forster" target="_blank" rel="noopener">官方节目页</a>。</p>
+                  <ul>
+                    <li><strong>Voříšek</strong> 不用急着找“大旋律”，重点听突然变暗的和声、舞曲感节奏，以及古典清晰度和浪漫派幻想之间的语气。</li>
+                    <li><strong>Schubert D845</strong> 是 A minor 的中后期奏鸣曲：第一乐章听反复出现的紧张动机，第二乐章听同一个主题如何换光线，后两乐章听焦虑如何被压进舞步和奔跑里。</li>
+                    <li><strong>现场重点</strong> 是 Jacobins 空间的自然混响。不要边听边查资料，把注意力放在弱音、停顿、尾音和石材空间里的回声上。</li>
+                  </ul>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <details>
-          <summary>交通：Eze 怎么去摩纳哥</summary>
-          <div class="expand-content">
-            <ul>
-              <li>从 Eze 村坐 Bus #602 直接到摩纳哥（约20分钟）</li>
-              <li>或者走下山到 Eze-sur-Mer 火车站，坐火车到摩纳哥（约10分钟）</li>
-              <li>下山的 Nietzsche Path 本身就很美，但比较陡（约45分钟步行）</li>
-            </ul>
-          </div>
-        </details>
-        <details>
-          <summary>备选：Menton（替代摩纳哥）</summary>
-          <div class="expand-content">
-            如果对摩纳哥没兴趣，可以换成 <strong>Menton</strong>（火车35分钟）：
-            <ul>
-              <li>意大利边境小城，柠檬之都</li>
-              <li>彩色老城、Cocteau 博物馆</li>
-              <li>比摩纳哥更悠闲、更有生活气息</li>
-              <li>如果对米其林感兴趣：<strong>Mirazur</strong>（三星，2019世界最佳餐厅）就在这里，但需要提前几个月预订</li>
-            </ul>
-          </div>
-        </details>
-        <details>
-          <summary>🎾 网球朝圣：Monte-Carlo Country Club</summary>
-          <div class="expand-content">
-            <div class="tennis-badge">🎾 网球圣地</div>
-            <div style="font-size:0.9rem; line-height:1.8;">
-              <strong>Monte-Carlo Country Club (MCCC)</strong> — <strong>ATP 蒙特卡洛大师赛</strong>举办地<br><br>
 
-              21片红土场 + 2片硬地，著名的阶梯式红土球场<strong>面朝地中海</strong>，景色绝美。虽然大师赛在4月举行，<strong>9月可以去打球！</strong><br><br>
+            <details class="card reco collapsible-card">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">打卡 / 吃喝</div>
+                  <div class="card-meta">Victor Hugo 午市 + Saint-Cyprien 下午 + 音乐会后小酒。</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="reco-sections">
+                  <div class="reco-section">
+                    <h4>市场午餐</h4>
+                    <ul>
+                      <li><strong><a href="https://restaurant-lemagret.fr/contact/" target="_blank" rel="noopener">Le Magret</a></strong> — Victor Hugo 二楼优先项；偏鸭、cassoulet 和当日市场菜。明确想吃它就提前电话订；官方写周二至周五午餐 12:00-14:00，和 9/17 周四匹配。</li>
+                      <li><strong>L'Impériale</strong> — 老牌西南家庭餐厅方向；如果想吃更传统的市场楼上餐厅，选它。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>下午停靠</h4>
+                    <ul>
+                      <li><strong>Café Manine</strong> — Saint-Cyprien 河西街区停靠点；咖啡、自然酒、小盘都合适。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>音乐会后</h4>
+                    <ul>
+                      <li><strong>Les Carmes</strong> — 回到老城南侧，按体力找一杯 cocktail / wine；这里酒吧密度高，适合音乐会后灵活处理。</li>
+                      <li><strong>Nasdrovia / L'Heure du Singe</strong> — 如果第一晚没去，可作为音乐会后的轻量备选，不需要为了喝酒再跨区折腾。</li>
+                      <li><strong><a href="https://www.toulouse-tourisme.com/en/restaurant/n5-wine-bar/" target="_blank" rel="noopener">N5 Wine Bar</a></strong> — 旅游局页面仍列周四 18:00-00:00 且可预订，但你查到的 Google 状态有冲突；出发前复核营业状态。若确认开，就把它当音乐会后的 wine bar，不当重晚餐。</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </details>
 
-              <strong>访客打球信息：</strong>
-              <ul>
-                <li>非会员访客可租场，约 <strong>€60/人</strong>（含球场+健身房+更衣室+餐厅使用）</li>
-                <li>需在打球时间前 <strong>30分钟致电确认</strong> 空场</li>
-                <li>电话：04 93 41 30 15 / 邮箱：info@mccc.mc</li>
-              </ul>
-              <br>
-              <strong>怎么去：</strong>位于 Roquebrune-Cap-Martin（法国境内，紧邻摩纳哥）。从尼斯开车约30分钟，从摩纳哥打车10分钟。<br><br>
-              <strong>建议：</strong>上午逛完 Eze 后，下午去摩纳哥时顺路安排1-2小时打球或参观。在大师赛球场上打红土，面朝地中海，不虚此行。
-            </div>
           </div>
-        </details>
-      </div>
+        </article>
 
-      <!-- DAY 8 -->
-      <div class="day" data-city="nice" data-day="8">
-        <div class="day-dot">8</div>
-        <div class="day-date">9月23日 周二</div>
-        <div class="day-title">自由日：四选一</div>
-        <div class="day-desc">多出来的一天，按心情选择。不赶路，享受蔚蓝海岸。</div>
-
-        <div class="spot-card">
-          <div class="spot-body">
-            <div class="spot-name">今天想做什么？</div>
-            <div class="spot-text">前两天已经看了 Eze、摩纳哥、Villefranche，今天完全自由。下面四个选项展开看，选一个最对胃口的。</div>
-          </div>
-        </div>
-
-        <details>
-          <summary>选项A：Villefranche 纯海滩日</summary>
-          <div class="expand-content">
-            之前只去了半天，这次可以从早躺到晚。火车6分钟，不需要计划。<br><br>
-            <ul>
-              <li>上午去占个好位置，<strong>Plage des Marinieres</strong> 从早上就很美</li>
-              <li>游泳、晒太阳、读本书</li>
-              <li>午饭直接在海边吃</li>
-              <li>下午继续躺，或者沿海边散步到 <strong>Citadelle</strong></li>
-              <li>晚上回尼斯老城吃最后一顿</li>
-            </ul>
-            <strong>适合：</strong>想彻底放松，不想动脑的一天。
-          </div>
-        </details>
-        <details>
-          <summary>选项B：Menton 一日游</summary>
-          <div class="expand-content">
-            意大利边境的柠檬小城，比摩纳哥有人情味得多。<strong>火车从尼斯35分钟。</strong><br><br>
-            <ul>
-              <li><strong>彩色老城</strong> — 粉橙黄的房子层层叠叠爬上山，非常上相</li>
-              <li><strong>Marche des Halles</strong> — 本地市场，柠檬和柑橘制品是特色</li>
-              <li><strong>Musee Jean Cocteau</strong> — 建筑本身就很棒，在海边</li>
-              <li><strong>Plage des Sablettes</strong> — Menton 主沙滩，比尼斯人少很多</li>
-              <li><strong>Mirazur</strong> — 如果你想吃一顿三星米其林，就在 Menton。2019年世界最佳餐厅。需要提前几个月预订，午餐相对容易订到</li>
-            </ul>
-            <strong>适合：</strong>想探索新地方，喜欢小镇氛围。如果订到 Mirazur 那就更值了。
-          </div>
-        </details>
-        <details>
-          <summary>选项C：Cap Ferrat 海岸步道</summary>
-          <div class="expand-content">
-            蔚蓝海岸最美的海边步道。<strong>从尼斯坐公交/火车到 Villefranche 或 Beaulieu，约15分钟。</strong><br><br>
-            <ul>
-              <li><strong>海岸步道环线</strong>（8.5km）— 绕 Cap Ferrat 半岛一圈，大部分平路，走走停停约3小时。一边是悬崖，一边是碧蓝海水</li>
-              <li><strong>Villa Ephrussi de Rothschild</strong> — 粉色别墅 + 9个主题花园，俯瞰两边海湾。非常精致</li>
-              <li><strong>Paloma Beach</strong> — 步道中间的小海湾，可以下去游泳、吃午饭</li>
-              <li>走完步道可以去 Villefranche 或 Beaulieu-sur-Mer 吃晚饭</li>
-            </ul>
-            <strong>适合：</strong>想要运动+风景+海滩的组合，比纯躺着更充实。
-          </div>
-        </details>
-        <details>
-          <summary>选项D：尼斯深度游</summary>
-          <div class="expand-content">
-            如果之前逛老城意犹未尽，今天可以深入探索。<br><br>
-            <ul>
-              <li><strong>马蒂斯美术馆</strong>（Musee Matisse）— 在 Cimiez 山上的别墅里，马蒂斯生前最后住的城市</li>
-              <li><strong>夏加尔美术馆</strong>（Musee Chagall）— 专门为夏加尔的圣经系列作品建的博物馆，彩色玻璃窗很美</li>
-              <li><strong>Cours Saleya 市场</strong> — 周二是正常市场日（不是古董），最后一次机会逛</li>
-              <li><strong>Promenade des Anglais</strong> — 租个躺椅在天使湾晒太阳，虽然是石子滩但氛围经典</li>
-              <li>晚上在老城找家没试过的餐厅，给旅行画个句号</li>
-            </ul>
-            <strong>适合：</strong>对艺术感兴趣，或者单纯想在尼斯再泡一天不出城。
-          </div>
-        </details>
-        <details>
-          <summary>选项E：🎾 网球日</summary>
-          <div class="expand-content">
-            <div class="tennis-badge">🎾 网球爱好者专属</div><br>
-            今天可以安排一整天围绕网球：<br><br>
-            <ul>
-              <li><strong>上午：Nice Lawn Tennis Club (NLTC)</strong><br>
-                创建于 <strong>1890年</strong>，尼斯最古老的网球俱乐部。传奇女将<strong>苏珊·朗格伦（Suzanne Lenglen）</strong>小时候就在这里训练。13片红土场 + 5片快速场。<br>
-                • 欢迎访客！提前 <strong>24小时</strong> 预约<br>
-                • 两名非会员红土场：工作日 <strong>€25</strong>，周末 €32<br>
-                • 电话：04 92 15 58 00<br>
-                • 地址：5 Avenue Suzanne Lenglen（大道以朗格伦命名）<br>
-                • 每天 9:00-21:00 开放
-              </li>
-              <br>
-              <li><strong>下午：Mouratoglou Tennis Academy</strong>（Biot，距尼斯机场15分钟）<br>
-                Patrick Mouratoglou（小威教练）创办，全球最顶级网球学院之一。<strong>34片球场</strong>（17红土+17硬地），配有4星酒店。<br>
-                • 提供<strong>成人短期训练营</strong>：半天或全天<br>
-                • 半天含90分钟球场训练 + 体能<br>
-                • 预约：booking.mouratoglou.com
-              </li>
-            </ul>
-            <br>
-            如果昨天（Day 7）没去 MCCC，也可以今天去 Monte-Carlo Country Club 打球。<br><br>
-            <strong>适合：</strong>网球爱好者的完美一天——百年俱乐部 + 职业级学院，两种截然不同的体验。
-          </div>
-        </details>
-      </div>
-
-      <!-- DAY 9 -->
-      <div class="day" data-city="nice" data-day="9">
-        <div class="day-dot">9</div>
-        <div class="day-date">9月24日 周三</div>
-        <div class="day-title">从尼斯启程回家</div>
-        <div class="day-desc">蔚蓝海岸的最后一个早晨。</div>
-        <div class="spot-card">
-          <div class="spot-body">
-            <div class="spot-name">最后的早晨</div>
-            <div class="spot-text">
-              <strong>选项A：</strong>Cours Saleya 最后逛一次早市（周三有市场），买点最后的手信<br><br>
-              <strong>选项B：</strong>Villefranche 最后泡一次海（火车6分钟）<br><br>
-              <strong>选项C：</strong>老城里随便走走，找家咖啡馆坐着看人<br><br>
-              尼斯机场离市区很近（轻轨30分钟），不需要太早出发。
+        <article class="day">
+          <div class="day-head">
+            <div class="day-number">3</div>
+            <div>
+              <div class="day-date">9月18日 周五</div>
+              <h3 class="day-title">Toulouse 上午 → Château de Goudourville</h3>
+              <p class="day-desc">上午在 Toulouse 收尾，下午进 Château de Goudourville；抵达后重点是逛城堡、看露台和河谷。</p>
             </div>
           </div>
+
+          <div class="cards">
+            <div class="card city-primer full">
+              <div class="card-body">
+                <div class="card-name">Château de Goudourville 速写</div>
+                <div class="card-meta">住进法国西南乡间遗产</div>
+                <div class="card-text">这不是“参观城堡”，是直接住进法国西南乡间遗产里。白天看城墙、露台和加龙河谷，晚上参加婚礼；最特别的不是外面还有什么景点，而是这两天不用离开城堡。它的爽点是：你不是游客路过古堡，而是把婚礼周末完整放在古堡里过。</div>
+              </div>
+            </div>
+            <details class="card route collapsible-card full">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">路线 / 时间 / 执行</div>
+                  <div class="card-meta">Le Grand Balcon（Capitole 旁酒店）→ Les Carmes / Garonne（老城和河边）→ Toulouse Matabiau（主火车站）→ Valence d'Agen（离城堡最近火车站）→ Château de Goudourville（婚礼城堡）</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="route-plan">
+                  <section class="route-section">
+                    <h4>上午 Toulouse 收尾</h4>
+                    <ul>
+                      <li>退房后把行李寄存在 <strong>Le Grand Balcon</strong>，不要拖着行李逛。</li>
+                      <li>只做轻量收尾：<strong>Les Carmes</strong> 小街、<strong>Esquirol</strong> 一带和 <strong>Garonne</strong> 河边，不再单独排景点。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>中午 取行李 → Matabiau</h4>
+                    <ul>
+                      <li>中午前后回酒店取行李，打车去 <strong>Toulouse Matabiau</strong>。</li>
+                      <li><strong>Toulouse Matabiau</strong> 是图卢兹主火车站，去 Valence d'Agen 的火车从这里处理最方便。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>下午 火车 → Valence d'Agen</h4>
+                    <ul>
+                      <li>坐火车到 <strong>Valence d'Agen</strong>，它是去 <strong>Château de Goudourville</strong> 最方便的铁路落点。</li>
+                      <li>城堡在乡村地带，临时叫车不稳；提前让新人或城堡确认 taxi service，或预订车站接送。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>傍晚 抵达 Château de Goudourville</h4>
+                    <ul>
+                      <li>到城堡先放行李，熟悉房间、露台、庭院、泳池和婚礼动线。</li>
+                      <li>今天的重点是从城市旅行切到婚礼周末，不再塞 Carcassonne 或外部小镇。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section note">
+                    <h4>预约 / 营业 / 注意</h4>
+                    <ul>
+                      <li><strong>Toulouse → Valence d'Agen</strong> 火车票待购买。</li>
+                      <li><strong>Valence d'Agen → Château</strong> taxi / 婚礼接送必须提前确认。</li>
+                      <li><strong>Le Café Cerise</strong>、<strong>Allegory Coffee Bar</strong> 和伴手礼只作为顺路选择，不为了它们延误火车。</li>
+                    </ul>
+                  </section>
+                </div>
+              </div>
+            </details>
+
+            <div class="card highlight wedding">
+              <img src="assets/wedding-chateau.webp" alt="Château de Goudourville wedding venue">
+              <div class="card-body">
+                <div class="card-name">Highlight：抵达后逛 Château de Goudourville</div>
+                <div class="card-meta">下午 / 傍晚 • 露台、城墙、河谷视野、庭院和泳池</div>
+                <div class="card-text">这天真正的 highlight 是下午进城堡后从旅行模式切到婚礼周末。<strong>Château de Goudourville</strong> 坐在加龙河谷上方，最值得先看的是露台、城墙、庭院和远处河谷；这些不是“顺手拍照背景”，而是接下来两天仪式、晚宴、brunch 的实际舞台。抵达后先放行李，再绕一圈熟悉动线；如果泳池开放、天气够暖，晚饭前就在花园或泳池边慢下来，不再塞外部景点。</div>
+              </div>
+            </div>
+
+            <details class="card reco collapsible-card">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">打卡 / 吃喝</div>
+                  <div class="card-meta">退房前只做咖啡、Carmes 小街和 Toulouse 伴手礼。</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="reco-sections">
+                  <div class="reco-section">
+                    <h4>咖啡</h4>
+                    <ul>
+                      <li><strong>Le Café Cerise</strong> — 靠 Daurade / Pont-Neuf 河边的 specialty coffee，比普通酒店早餐更有 Toulouse 日常感。</li>
+                      <li><strong>Allegory Coffee Bar</strong> — 如果离 Esquirol 更近，用它作咖啡备选。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>小街和市场</h4>
+                    <ul>
+                      <li><strong>Marché des Carmes</strong> — Carmes 区的小市场，适合退房前轻量补逛。</li>
+                      <li><strong>Rue Pharaon</strong> — Carmes 里餐馆多的小街，适合顺路走过。</li>
+                      <li><strong>Place de la Trinité</strong> — 老城小广场，适合最后看一眼 Toulouse 粉砖街区。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>伴手礼</h4>
+                    <ul>
+                      <li><strong>La Maison de la Violette</strong> — 图卢兹紫罗兰主题小店；有地方性，但午间休息，只作为顺路备选。</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <details class="card lodging collapsible-card full">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">住宿 Highlight：Château de Goudourville</div>
+                  <div class="card-meta">9/18-9/20 两晚 • 中世纪城堡 • 婚礼周末完整停留</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="card-text"><strong>Château de Goudourville</strong> 不是“乡下漂亮房子”，而是一座层次很厚的中世纪城堡：这一带名字可以追到 5 世纪西哥特人，11 世纪家族在这里修出带防御逻辑的 V 形堡垒，用两座角塔形成交叉火力。后来它从边境防御点慢慢变成贵族宅邸，文艺复兴时期加入螺旋楼梯，18 世纪又被改得更优雅，露台和大窗把军事建筑变成看河谷的生活空间。婚礼周末住在这里的价值很明确：不用把时间花在接驳上，可以把房间、露台、仪式、晚宴和第二天 brunch 连成一个完整场景。</div>
+              </div>
+            </details>
+
+          </div>
+        </article>
+
+        <article class="day">
+          <div class="day-head">
+            <div class="day-number">4</div>
+            <div>
+              <div class="day-date">9月19日 周六</div>
+              <h3 class="day-title">Lynn & Guillaume 婚礼日</h3>
+              <p class="day-desc">3:00 PM welcome & games，5:00 PM 仪式，7:00 PM 晚宴。</p>
+            </div>
+          </div>
+
+          <div class="cards">
+            <details class="card route collapsible-card full">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">路线 / 时间 / 执行</div>
+                  <div class="card-meta">全天在 Château de Goudourville（婚礼城堡）</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="route-plan">
+                  <section class="route-section">
+                    <h4>上午 城堡内慢下来</h4>
+                    <ul>
+                      <li><strong>Château de Goudourville</strong> 是 Valence d'Agen 附近乡村里的婚礼城堡，今天全天留在这里。</li>
+                      <li>上午休息、拍照，熟悉从房间到露台、庭院、仪式区和晚宴区的动线。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>15:00-17:00 Welcome + Ceremony</h4>
+                    <ul>
+                      <li>15:00 welcome & games，提前一点回房整理，不要卡点。</li>
+                      <li>17:00 仪式开始；如果在户外露台，提前准备薄外套或披肩。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>17:30-晚上 Cocktail + Dinner</h4>
+                    <ul>
+                      <li>17:30-19:00 cocktail hour，是拍照、聊天、看城堡黄昏的主要时间。</li>
+                      <li>19:00 晚宴；今天不安排外部景点，完整留给婚礼。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section note">
+                    <h4>预约 / 营业 / 注意</h4>
+                    <ul>
+                      <li>婚礼请帖链接已放在 Quick Access；当天不安排外部景点。</li>
+                      <li>9/20 离开城堡的接送今天再和新人/城堡确认一次。</li>
+                      <li>城堡泳池、庭院和室外晚宴都受天气影响，按现场安排走。</li>
+                    </ul>
+                  </section>
+                </div>
+              </div>
+            </details>
+
+            <div class="card highlight wedding">
+              <img src="https://static.wixstatic.com/media/2c52b4_34f954f616b74c67a263134dba9716ed~mv2.jpg" alt="Wedding reception in the Courtyard of Honour at Château de Goudourville">
+              <div class="card-body">
+                <div class="card-name">Highlight：仪式 + cocktail + 晚宴</div>
+                <div class="card-meta">15:00 welcome • 17:00 ceremony • 19:00 dinner</div>
+                <div class="card-text">这一天的核心不是“参加一个活动”，而是在城堡里经历完整婚礼节奏：下午 welcome & games 先把大家聚起来，17:00 仪式进入正式部分，cocktail hour 是看场地、拍照、和朋友聊天的黄金时间，19:00 晚宴再把城堡夜晚打开。九月白天舒服但夜里会凉，晚宴如果在户外露台，薄外套或披肩很实用。请帖和 RSVP：<a href="https://lynnandguillaume.netlify.app/#travel" target="_blank" rel="noopener">Lynn & Guillaume wedding site</a>。</div>
+              </div>
+            </div>
+
+            <details class="card reco collapsible-card">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">打卡 / 城堡内体验</div>
+                  <div class="card-meta">婚礼日不外出，把城堡本身当停留点。</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="reco-sections">
+                  <div class="reco-section">
+                    <h4>城堡内</h4>
+                    <ul>
+                      <li><strong>Château de Goudourville</strong> — 今天本身就是目的地；上午看露台、城墙、加龙河谷视野、庭院和泳池。</li>
+                      <li><strong>婚礼动线</strong> — 顺便找到仪式、cocktail、晚宴之间怎么走，15:00 welcome 前回房间整理。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>附近低优先级</h4>
+                    <ul>
+                      <li><strong>Auvillar</strong> — 附近山坡小镇；只有有人开车、时间非常松时再考虑。</li>
+                      <li><strong>Moissac</strong> — 以修道院和回廊出名；不要为了它压缩婚礼节奏。</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </article>
+
+        <article class="day">
+          <div class="day-head">
+            <div class="day-number">5</div>
+            <div>
+              <div class="day-date">9月20日 周日</div>
+              <h3 class="day-title">婚礼 brunch → 回 Toulouse 过夜</h3>
+              <p class="day-desc">完整参加 11:00 AM-1:00 PM brunch，下午回 Toulouse，第二天中午飞 Nice。</p>
+            </div>
+          </div>
+
+          <div class="cards">
+            <details class="card route collapsible-card full">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">路线 / 时间 / 执行</div>
+                  <div class="card-meta">Château de Goudourville（婚礼城堡）→ Valence d'Agen（最近火车站）→ Toulouse（回城缓冲夜）→ Hôtel SOCLO（Garonne / Jacobins 附近 boutique 酒店）</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="route-plan">
+                  <section class="route-section">
+                    <h4>11:00-13:00 婚礼 brunch</h4>
+                    <ul>
+                      <li>完整参加 brunch，把婚礼第二天的告别、合照和聊天留足。</li>
+                      <li>不要为了 9/20 飞 Nice 压缩这一段；Nice 已改到 9/21 入住。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>13:00-14:00 退房 + 离开城堡</h4>
+                    <ul>
+                      <li>收拾行李、退房、和新人/朋友告别。</li>
+                      <li>用提前约好的车去 <strong>Valence d'Agen</strong> 车站；行李多也可以直接包车去 <strong>Toulouse</strong> 市区。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>下午 回 Toulouse</h4>
+                    <ul>
+                      <li>从 <strong>Valence d'Agen</strong> 坐火车回 <strong>Toulouse</strong>，今天不赶机场。</li>
+                      <li>抵达后入住 <strong>Hôtel SOCLO</strong>，它靠 Garonne 河和 Jacobins 一带，适合作为婚礼后的缓冲夜。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>晚上 + 第二天机场准备</h4>
+                    <ul>
+                      <li>晚上只安排轻松晚餐和散步，不再排硬景点。</li>
+                      <li>第二天 <strong>easyJet KCPCT44 / EJU1626</strong> 12:20 飞 Nice；bag drop 10:20-11:20，建议 9:45 左右从市区出发去机场。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section note">
+                    <h4>预约 / 营业 / 注意</h4>
+                    <ul>
+                      <li><strong>Château → Valence d'Agen / Toulouse</strong> 交通待确认。</li>
+                      <li><strong>Hôtel SOCLO</strong> 已订 9/20-9/21；check-in 16:00，checkout 12:00。</li>
+                      <li>周日晚餐优先选开放稳定的 <strong>Le Café de Toulouse</strong> / <strong>Le Bibent</strong> / <strong>Les Illustres</strong>。</li>
+                    </ul>
+                  </section>
+                </div>
+              </div>
+            </details>
+
+            <div class="card highlight">
+              <img src="https://static.wixstatic.com/media/2c52b4_8c235c19be0e4a8da73da4a483b95bfd~mv2.jpg" alt="Chateau wedding weekend">
+              <div class="card-body">
+                <div class="card-name">Highlight：11:00 AM-1:00 PM 婚礼 brunch</div>
+                <div class="card-meta">Château de Goudourville • 第二天告别场</div>
+                <div class="card-text">这顿 brunch 的价值不是食物本身，而是婚礼第二天的“慢收尾”：昨晚没聊够的人、家人合照、和新人告别，都会自然发生在这两个小时里。既然家人想参加，就完整留给它；不为了 9/20 赶飞机把婚礼周末最有人情味的一段压掉。</div>
+              </div>
+            </div>
+
+            <details class="card lodging collapsible-card">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">住宿 Highlight：Hôtel SOCLO Toulouse</div>
+                  <div class="card-meta">9/20-9/21 一晚 • 18 世纪宅邸 • Garonne / Jacobins 缓冲夜</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="card-text"><strong>Hôtel SOCLO</strong> 的优势不是“离机场近”，而是它把婚礼后的缓冲夜变成一个舒服的城市院落。它在 Toulouse 市中心一座 18 世纪宅邸里，离 Garonne 河岸和 Capitole 都很近，但气质不像普通市中心酒店：有花园、bar、小泳池和更安静的住宅感。fun fact 是它还拿到过 Michelin Key 级别的酒店认可；这晚不用赶景点，最好的用法就是在花园喝一杯、河边散步、早睡，第二天从容去机场。</div>
+              </div>
+            </details>
+
+            <details class="card reco collapsible-card">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">打卡 / 吃喝</div>
+                  <div class="card-meta">婚礼 brunch 后回 Toulouse，周日晚餐选稳妥开放点。</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="reco-sections">
+                  <div class="reco-section">
+                    <h4>酒店恢复</h4>
+                    <ul>
+                      <li><strong>Hôtel SOCLO</strong> — 把它当恢复点；花园或 bar 喝一杯，再轻走河边。</li>
+                      <li><strong>Garonne / Jacobins</strong> — 晚上散步路线，强度低，不需要再排硬景点。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>周日晚餐</h4>
+                    <ul>
+                      <li><strong>Le Café de Toulouse</strong> — Saint-Cyprien 河西街区，更像 neighborhood bistro；建议预约。</li>
+                      <li><strong>Le Bibent</strong> — Capitole 附近开放稳定，适合作保底。</li>
+                      <li><strong>Les Illustres</strong> — Capitole 附近保底选项，不必当行程重头戏。</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </details>
+
+          </div>
+        </article>
+
+        <article class="day">
+          <div class="day-head">
+            <div class="day-number">6</div>
+            <div>
+              <div class="day-date">9月21日 周一</div>
+              <h3 class="day-title">飞 Nice + 老城黄昏</h3>
+              <p class="day-desc">中午 easyJet 直飞，下午入住海边 Hyatt，傍晚走 Promenade 和 Vieux Nice。</p>
+            </div>
+          </div>
+
+          <div class="cards">
+            <div class="card city-primer full">
+              <div class="card-body">
+                <div class="card-name">Nice 速写</div>
+                <div class="card-meta">意大利感老城、英国人海滨大道、Niçois 小吃</div>
+                <div class="card-text">尼斯不是典型法国城市，它到 1860 年才并入法国，所以老城更像意大利，海边又有英国贵族度假的痕迹，食物则是 Niçois 本地派系。Promenade des Anglais 直译“英国人海滨大道”，名字真来自 19 世纪爱来这里过冬的英国人。这里的重点不是博物馆，是老城小吃、海边黄昏、天使湾和那种有点意大利味的南法生活感。</div>
+              </div>
+            </div>
+            <details class="card route collapsible-card full">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">路线 / 时间 / 执行</div>
+                  <div class="card-meta">Toulouse（图卢兹市区）→ TLS（Toulouse-Blagnac 机场）→ NCE（Nice Côte d'Azur 机场）→ Hôtel Palais de la Méditerranée（海边酒店）→ Vieux Nice（尼斯老城）</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="route-plan">
+                  <section class="route-section">
+                    <h4>09:45 Toulouse 市区 → TLS</h4>
+                    <ul>
+                      <li>从 Toulouse 市区出发去 <strong>Toulouse-Blagnac Airport</strong>，建议打车，不要压缩 bag drop 时间。</li>
+                      <li>easyJet bag drop 10:20-11:20，gate closes 30 minutes before departure。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>12:20-13:30 飞 Nice</h4>
+                    <ul>
+                      <li><strong>easyJet KCPCT44 / EJU1626</strong>，12:20 从 TLS 起飞，13:30 到 <strong>Nice Côte d'Azur Airport</strong>。</li>
+                      <li>到 Nice 后机场到 <strong>Hôtel Palais de la Méditerranée</strong> 很近；行李少可以坐 tram，想省心就 taxi。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>下午 入住 Hôtel Palais</h4>
+                    <ul>
+                      <li>到酒店后先办理入住或寄存行李；酒店就在 <strong>Promenade des Anglais</strong> 海滨大道上。</li>
+                      <li>如果房间还没好，先沿海边走一小段，别急着进老城深处。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>傍晚 Promenade + Vieux Nice</h4>
+                    <ul>
+                      <li>沿 <strong>Promenade des Anglais</strong> 看第一眼天使湾。</li>
+                      <li>傍晚进 <strong>Vieux Nice</strong>，也就是尼斯老城，吃第一顿，按体力决定是否上 <strong>Colline du Château</strong> 看全景。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section note">
+                    <h4>预约 / 营业 / 注意</h4>
+                    <ul>
+                      <li><strong>easyJet KCPCT44</strong> 已订；check-in opens 8/22 03:20。</li>
+                      <li><strong>Hôtel Palais</strong> confirmation 42322645；check-in 15:00，checkout 12:00。</li>
+                      <li><strong>Chez Pipo</strong> 不作为周一默认；第一晚更适合 <strong>Babel Babel</strong> 或老城灵活晚餐。</li>
+                    </ul>
+                  </section>
+                </div>
+              </div>
+            </details>
+
+            <details class="card lodging collapsible-card">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">住宿 Highlight：Hôtel Palais de la Méditerranée Nice</div>
+                  <div class="card-meta">9/21-9/24 三晚 • Promenade des Anglais 一线 • 1929 Art Deco 地标</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="card-text"><strong>Hôtel Palais de la Méditerranée</strong> 特别在于它本来就是 Nice 黄金年代的“娱乐宫殿”，不是后来贴上历史标签的普通海边酒店。1929 年开幕时，这里是 Promenade des Anglais 上的 Art Deco 大场面：赌场、酒吧、餐厅、舞厅、展厅和 800 座剧场都在同一栋建筑里。后来建筑几乎被拆，只留下受保护的 Art Deco 立面；你现在看到的正面不是装饰，而是被救下来的城市记忆。住三晚的实际好处也很强：每天从 Baie des Anges 和海滨大道开始，去老城、Cours Saleya、Eze / Villefranche 半日游后，可以回酒店泳池、露台或海边恢复体力。</div>
+              </div>
+            </details>
+
+            <div class="card highlight">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Promenade_des_Anglais_Nice_IMG_1255.jpg/1920px-Promenade_des_Anglais_Nice_IMG_1255.jpg" alt="Promenade des Anglais Nice">
+              <div class="card-body">
+                <div class="card-name">Highlight：Promenade + Vieux Nice</div>
+                <div class="card-meta">Promenade des Anglais（海滨大道）• Vieux Nice（老城）• Colline du Château（城堡山观景点）</div>
+                <div class="card-text"><strong>Promenade des Anglais</strong> 是 Nice 从欧洲冬季度假城市变成 Riviera 图标的那条海边线：一边是天使湾和蓝色石滩，一边是酒店、宫殿和海滨城市生活。第一晚不要急着“刷景点”，先沿海走到老城边缘，再进 <strong>Vieux Nice</strong> 的窄街、拱廊、gelato 店和小餐馆。体力好就上 <strong>Colline du Château</strong>，这里不是看城堡，而是看老城屋顶、港口和 Baie des Anges 的全景；累的话只吃晚饭和散步也完全够。</div>
+              </div>
+            </div>
+
+            <details class="card reco collapsible-card">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">打卡 / 吃喝</div>
+                  <div class="card-meta">周一到 Nice：避开关门坑，海边黄昏优先。</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="reco-sections">
+                  <div class="reco-section">
+                    <h4>海边晚餐 / 酒</h4>
+                    <ul>
+                      <li><strong><a href="https://www.babelbabel.fr/" target="_blank" rel="noopener">Babel Babel</a></strong> — 9/21 Nice 第一晚首选；订 balcony / terrace，19:30-20:00。它周一开、周二周三关，正好适合到 Nice 的第一晚；喝 vins vivants、cocktail，吃地中海小盘。</li>
+                      <li><strong><a href="https://www.leplongeoir.com/en/book-your-table/" target="_blank" rel="noopener">Le Plongeoir</a></strong> — 如果想要更“海上餐厅”场景，可以改订这里；更偏 view-first，餐厅需要预订。旁边 <strong>Le Vivier</strong> lounge bar 不用订，更适合只想喝一杯看海。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>传统 Niçois 菜</h4>
+                    <ul>
+                      <li><strong>La Merenda</strong> — 很小的老城地方菜餐厅；现金和订位规则要提前确认，订到再去。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>不作为周一默认</h4>
+                    <ul>
+                      <li><strong>Chez Pipo</strong> — Nice 经典 socca 店，但官网当前是周三到周日开放；第一晚不要把它当默认。</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </article>
+
+        <article class="day">
+          <div class="day-head">
+            <div class="day-number">7</div>
+            <div>
+              <div class="day-date">9月22日 周二</div>
+              <h3 class="day-title">Eze 山顶村 + Nice 放松</h3>
+              <p class="day-desc">上午看悬崖中世纪村落，下午回尼斯海边慢下来；不去 Monaco。</p>
+            </div>
+          </div>
+
+          <div class="cards">
+            <div class="card city-primer full">
+              <div class="card-body">
+                <div class="card-name">Èze 速写</div>
+                <div class="card-meta">悬崖中世纪村、山顶花园、Nietzsche Path</div>
+                <div class="card-text">Èze 是挂在悬崖上的中世纪村，精华只有一个：从石头小巷一路爬到 Jardin Exotique 山顶花园，突然看到整片地中海。Nietzsche Path 以德国哲学家尼采命名，据说他在这一带散步时获得了《查拉图斯特拉如是说》的灵感；但除非你想运动，不然坐公交上山更聪明。</div>
+              </div>
+            </div>
+            <details class="card route collapsible-card full">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">路线 / 时间 / 执行</div>
+                  <div class="card-meta">Nice（住宿城市）→ Eze Village（悬崖山顶村）→ Nice beach / hotel pool（海边或酒店泳池）→ Vieux Nice（尼斯老城）</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="route-plan">
+                  <section class="route-section">
+                    <h4>上午 Nice → Eze Village</h4>
+                    <ul>
+                      <li>从 Nice 坐公交 #82 / #602 到 <strong>Eze Village</strong>，这是建在海崖上的中世纪山顶村。</li>
+                      <li>不要直接坐火车到 <strong>Eze-sur-Mer</strong>，那是山脚海边站，除非你明确想爬 Nietzsche Path。</li>
+                      <li>把公交上山当默认方案；村里全是坡和石阶，穿能走路的鞋。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>上午 / 中午 Eze 精华</h4>
+                    <ul>
+                      <li>先走村子小巷，再上 <strong>Jardin Exotique d'Eze</strong>，看山顶仙人掌花园和地中海视角。</li>
+                      <li><strong>Fragonard Eze-Village</strong> 是香水工坊，适合作为下山前 30 分钟停靠点。</li>
+                      <li>整个 Eze 控制在 2.5-3 小时，不要在游客小店里拖太久。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>下午 回 Nice 放松</h4>
+                    <ul>
+                      <li>不接着赶 Monaco，把时间留给海边、酒店泳池、Promenade 黄昏和老城晚餐。</li>
+                      <li>如果上午走路多，下午直接回酒店泳池或海边躺椅，才符合三晚 Nice 的节奏。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section note">
+                    <h4>预约 / 营业 / 注意</h4>
+                    <ul>
+                      <li><strong>Jardin Exotique</strong> 官方 9 月开放：09:00-19:30。</li>
+                      <li><strong>Fragonard Eze Village</strong> 当前官方时间：10:00-19:00。</li>
+                      <li><strong>Château Eza</strong> / <strong>La Chèvre d'Or</strong> 只在想吃 view lunch 时提前订；否则不硬撑。</li>
+                    </ul>
+                  </section>
+                </div>
+              </div>
+            </details>
+
+            <div class="card highlight">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Eze_from_Ch%C3%A2teau_d%27%C3%88ze.jpg/1920px-Eze_from_Ch%C3%A2teau_d%27%C3%88ze.jpg" alt="Eze village">
+              <div class="card-body">
+                <div class="card-name">Highlight：Eze 山顶村</div>
+                <div class="card-meta">悬崖中世纪村 • Jardin Exotique（山顶花园）• Fragonard（香水工坊）</div>
+                <div class="card-text"><strong>Eze Village</strong> 的特别不只是“石头小村”，而是它像鹰巢一样卡在海崖上：窄巷、拱门、石墙和地中海高差同时出现，和加州海边小镇完全不是一种空间。<strong>Jardin Exotique</strong> 是精华，因为它把仙人掌花园、旧城高点和海景平台合在一起；<strong>Fragonard</strong> 香水工坊则是轻量但有地方性的停靠点，适合下山前顺手看。</div>
+              </div>
+            </div>
+
+            <div class="card highlight">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/20211112.Beaches_of_Nice.-011.jpg/1920px-20211112.Beaches_of_Nice.-011.jpg" alt="Nice beach">
+              <div class="card-body">
+                <div class="card-name">Highlight：回 Nice 海边放松</div>
+                <div class="card-meta">酒店泳池、海边躺椅、Promenade des Anglais 黄昏</div>
+                <div class="card-text">Eze 的精华 2.5-3 小时就够，再拖很容易变成在游客小店里消耗体力。下午回 Nice 是有意义的：你住的酒店本身就在海滨大道上，这时最适合把行程切回 Riviera 度假状态。酒店泳池、海边躺椅、<strong>Promenade des Anglais</strong> 黄昏和 <strong>Vieux Nice</strong> 老城晚餐，比硬塞 Monaco 更符合这趟三晚 Nice 的节奏。</div>
+              </div>
+            </div>
+
+            <details class="card reco collapsible-card">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">打卡 / 吃喝</div>
+                  <div class="card-meta">Eze 半日精华：Jardin Exotique + Fragonard，午餐不硬撑。</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="reco-sections">
+                  <div class="reco-section">
+                    <h4>Eze 必停</h4>
+                    <ul>
+                      <li><strong>Jardin Exotique d'Eze</strong> — Eze 真正值得上去的点，上午先看花园和海崖视角。</li>
+                      <li><strong>Fragonard Eze-Village</strong> — 村里的香水工坊；免费导览个人不需预约，适合下山前 30 分钟顺手停。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>景观午餐</h4>
+                    <ul>
+                      <li><strong><a href="https://www.chateaueza.com/location-and-contact.html" target="_blank" rel="noopener">Château Eza</a></strong> — 只有想吃景观 / 仪式感午餐时提前订；重点是 terrace / balcony 需求要写清楚，否则不硬撑。</li>
+                      <li><strong><a href="https://www.chevredor.com/restaurant-reservation/" target="_blank" rel="noopener">La Chèvre d'Or / Les Remparts / Café du Jardin</a></strong> — 这是 La Chèvre d'Or 体系里的几种选择。注意正餐厅 La Chèvre d'Or 是室内 fine dining；想要露台感不要订错，优先看 Les Remparts 或 Café du Jardin。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>回 Nice 晚餐 / 酒</h4>
+                    <ul>
+                      <li><strong>Bar des Oiseaux</strong> — 回 Nice 后的晚餐备选。</li>
+                      <li><strong>La Part des Anges</strong> — 自然酒方向，适合晚上轻松喝一杯。</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </details>
+
+          </div>
+        </article>
+
+        <article class="day">
+          <div class="day-head">
+            <div class="day-number">8</div>
+            <div>
+              <div class="day-date">9月23日 周三</div>
+              <h3 class="day-title">Cours Saleya + Villefranche + Cap Ferrat</h3>
+              <p class="day-desc">周三早市、彩色港湾、海岸步道和游泳；这是尼斯周边主菜。</p>
+            </div>
+          </div>
+
+          <div class="cards">
+            <div class="card city-primer full">
+              <div class="card-body">
+                <div class="card-name">Villefranche-sur-Mer 速写</div>
+                <div class="card-meta">港湾、暗街、Cocteau 小彩蛋</div>
+                <div class="card-text">尼斯是大海，Villefranche 是港湾。这里水更静、更绿，彩色房子贴着海，小镇比摩纳哥有人味。Rue Obscure 意思是“暗街”，是一条 13 世纪的有顶石头街；Jean Cocteau 是法国诗人、电影人和艺术家，他给港口边的小教堂画过壁画，所以这个小渔港有一点艺术圈的隐藏彩蛋。</div>
+              </div>
+            </div>
+
+            <div class="card city-primer full">
+              <div class="card-body">
+                <div class="card-name">Cap Ferrat 速写</div>
+                <div class="card-meta">old money 半岛、Rothschild 别墅、海岸步道</div>
+                <div class="card-text">Cap Ferrat 是蔚蓝海岸的 old money 半岛：不吵、不炫，但每个海湾都贵得很安静。Villa Ephrussi 是 Rothschild 家族留下的粉色海景别墅；Rothschild 是欧洲最有名的银行家族之一。这里真正好玩的不是“看豪宅”，而是走一段海岸步道，看豪宅、松树、岩石和地中海怎么凑在一起。</div>
+              </div>
+            </div>
+            <details class="card route collapsible-card full">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">路线 / 时间 / 执行</div>
+                  <div class="card-meta">Cours Saleya（尼斯老城早市）→ Villefranche-sur-Mer（彩色港湾小镇）→ Cap Ferrat（半岛海岸线）→ Nice</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="route-plan">
+                  <section class="route-section">
+                    <h4>08:30-10:00 Cours Saleya</h4>
+                    <ul>
+                      <li>先逛 <strong>Cours Saleya</strong>，这是 Nice 老城里最有代表性的花市/食材市场。</li>
+                      <li>周三是正常早市，适合看花、食材、橄榄、香料和 Niçois 小吃。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>上午 Nice → Villefranche</h4>
+                    <ul>
+                      <li>从 Nice 坐短程 TER 火车去 <strong>Villefranche-sur-Mer</strong>，一个夹在 Nice 和 Cap Ferrat 之间的彩色港湾小镇。</li>
+                      <li>重点看港口、老城、<strong>Rue Obscure</strong>（老城里的暗街/拱廊）和 <strong>Plage des Marinières</strong>（小镇主海滩）。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>午后 Villefranche 午餐 / 海滩</h4>
+                    <ul>
+                      <li>午餐优先放在港口一带，订到 <strong>Mayssa Beach</strong> 或 <strong>La Mère Germaine</strong> 再坐下吃。</li>
+                      <li>这天不要只当“散步小镇”；随身带泳衣、水鞋和轻毛巾，天气好就在 <strong>Plage des Marinières</strong> 下水。</li>
+                      <li><strong>Villefranche-sur-Mer</strong> 的价值一半在港湾，一半在水里。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>下午 Cap Ferrat</h4>
+                    <ul>
+                      <li>按体力加 <strong>Cap Ferrat</strong>，也就是豪宅半岛和海岸步道区域。</li>
+                      <li>从 Villefranche / Beaulieu 一带转 bus 或直接 taxi；二选一即可：<strong>Villa Ephrussi</strong> 花园别墅，或一段 <strong>Saint-Hospice</strong> 半岛短步道。</li>
+                      <li>如果天气热，Villefranche 去 <strong>Villa Ephrussi</strong> 直接 taxi；别为了省一点公交把体力耗光。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section note">
+                    <h4>预约 / 营业 / 注意</h4>
+                    <ul>
+                      <li><strong>Cours Saleya</strong> 旅游局页面列为 2026 年全年开放；周一偏古董市场，周三适合早市。</li>
+                      <li><strong>Villa Ephrussi</strong> 官方 2026/2/2-11/1：10:00-18:00，最后入场闭馆前 30 分钟。</li>
+                      <li>不要带大包去 <strong>Villa Ephrussi</strong>；官方写没有 luggage lockers，且大包/行李禁止入内。</li>
+                      <li><strong>Mayssa Beach</strong> / <strong>La Mère Germaine</strong> 建议提前订；<strong>Chapelle Saint-Pierre</strong> 同周再核对开放。</li>
+                    </ul>
+                  </section>
+                </div>
+              </div>
+            </details>
+
+            <div class="card highlight">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/5/50/Cours_Saleya_-_2.jpg" alt="Cours Saleya market in Nice">
+              <div class="card-body">
+                <div class="card-name">Highlight：Cours Saleya 早市</div>
+                <div class="card-meta">周三正常市场日 • 老城早晨氛围</div>
+                <div class="card-text"><strong>Cours Saleya</strong> 是 Nice 老城白天最有生命力的一条街：花、蔬果、香料、橄榄、tapenade、socca / pissaladière 这些东西都集中在这里。周一偏古董市场，周三更适合你们看正常早市。早上先来这里，不只是买早餐，而是把 Nice 的意大利-普罗旺斯混合气质先闻到、看到、吃到。</div>
+              </div>
+            </div>
+
+            <div class="card highlight">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Villefranche-s-Mer-VueSurLeVillage-20071102.jpg/1920px-Villefranche-s-Mer-VueSurLeVillage-20071102.jpg" alt="Villefranche-sur-Mer harbor">
+              <div class="card-body">
+                <div class="card-name">Highlight：Villefranche-sur-Mer</div>
+                <div class="card-meta">彩色港湾 • Rue Obscure（暗街拱廊）• Plage des Marinières（主海滩）</div>
+                <div class="card-text"><strong>Villefranche-sur-Mer</strong> 的美不在“大”，而在港湾尺度：彩色房子几乎贴着深水港，老城、港口和海滩距离很短，像把 Riviera 压缩成一个可步行的小剧场。<strong>Rue Obscure</strong> 是老城里很有记忆点的暗街/拱廊，<strong>Chapelle Saint-Pierre</strong> 由 Cocteau 装饰，像一颗小彩蛋；<strong>Plage des Marinières</strong> 是主海滩，九月天气好就带泳衣和水鞋。</div>
+              </div>
+            </div>
+
+            <div class="card highlight">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Villa_Ephrussi_cot%C3%A9_jardin_%C3%A0_la_fran%C3%A7aise.jpg" alt="Villa Ephrussi de Rothschild and French garden on Cap Ferrat">
+              <div class="card-body">
+                <div class="card-name">Highlight：Cap Ferrat / Villa Ephrussi</div>
+                <div class="card-meta">Cap Ferrat 半岛 • Villa Ephrussi（花园别墅）• Pointe Saint-Hospice（短步道）</div>
+                <div class="card-text"><strong>Cap Ferrat</strong> 和加州海边最大不同是“半岛豪宅 + 蓝色小海湾 + 正式花园”的组合。<strong>Villa Ephrussi de Rothschild</strong> 是粉色海景别墅和多主题花园，像把 Belle Époque Riviera 的审美做成一个可参观的私人世界；想走路就选一段 <strong>Pointe Saint-Hospice</strong> / Cap Ferrat 海岸步道，看岩石、松树、海湾和透明海水即可，不要贪心绕完整圈。</div>
+              </div>
+            </div>
+
+            <details class="card reco collapsible-card">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">打卡 / 吃喝</div>
+                  <div class="card-meta">Cours Saleya 早市 + Villefranche 港口午餐；Paloma 不再作为选项。</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="reco-sections">
+                  <div class="reco-section">
+                    <h4>早市小吃</h4>
+                    <ul>
+                      <li><strong>Cours Saleya</strong> — 周三正常早市；吃水果、橄榄、tapenade、socca / pissaladière 一类小吃。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>Villefranche 午餐</h4>
+                    <ul>
+                      <li><strong><a href="https://www.mayssabeach.fr/en/home-page" target="_blank" rel="noopener">Mayssa Beach</a></strong> — 首选，订露台 12:30 左右；午餐每天 12:00-14:30，官网可订。看港湾吃烤鱼，这顿午餐本身就是 Villefranche / Cap Ferrat 当天的核心体验。</li>
+                      <li><strong><a href="https://www.meregermaine.fr/en/home/" target="_blank" rel="noopener">La Mère Germaine</a></strong> — 如果想更老派正式海鲜，订这里；港口边的经典餐厅，也有订位入口。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>Cap Ferrat 下午</h4>
+                    <ul>
+                      <li><strong>Villa Ephrussi</strong> — 花园别墅，适合轻松逛，不需要很大体力。</li>
+                      <li><strong>Saint-Hospice</strong> — 半岛短步道，想走路看海岸线就选它。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>Beach-club 备选</h4>
+                    <ul>
+                      <li><strong>Paloma Beach</strong> — 官网已标注永久关闭，不作为选项。</li>
+                      <li><strong>Baia Bella</strong> — 想要 beach-club 氛围，改去 Beaulieu 这个 Cap Ferrat 旁海边小镇。</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </article>
+
+        <article class="day">
+          <div class="day-head">
+            <div class="day-number">9</div>
+            <div>
+              <div class="day-date">9月24日 周四</div>
+              <h3 class="day-title">从 Nice 启程回家</h3>
+              <p class="day-desc">蔚蓝海岸的最后一个早晨，轻松退房去机场。</p>
+            </div>
+          </div>
+
+          <div class="cards">
+            <details class="card route collapsible-card full">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">路线 / 时间 / 执行</div>
+                  <div class="card-meta">Hôtel Palais de la Méditerranée（Promenade 海边酒店）→ NCE Terminal 1（Nice 机场）→ LHR Terminal 5（伦敦希思罗）→ SFO</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="route-plan">
+                  <section class="route-section">
+                    <h4>07:00-08:15 早餐 / 最后海边</h4>
+                    <ul>
+                      <li>如果酒店早餐 7:00 左右开始，可以简单吃。</li>
+                      <li>最多在 <strong>Promenade des Anglais</strong> 走一小段，不进老城深处。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>08:15-09:00 酒店 → NCE</h4>
+                    <ul>
+                      <li>8:15-8:30 从 <strong>Hôtel Palais de la Méditerranée</strong> 出发去 <strong>Nice Côte d'Azur Airport Terminal 1</strong>。</li>
+                      <li>9:00 左右到机场比较稳，留出托运、安检和退税/补买时间。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section">
+                    <h4>11:25-17:40 BA 回程</h4>
+                    <ul>
+                      <li><strong>BA327</strong>：11:25 NCE Terminal 1 → 12:40 London Heathrow Terminal 5。</li>
+                      <li><strong>LHR T5</strong> 转机 1h50m，按 Flight Connections 重新安检。</li>
+                      <li><strong>BA287</strong>：14:30 LHR Terminal 5 → 17:40 SFO Terminal I。</li>
+                    </ul>
+                  </section>
+                  <section class="route-section note">
+                    <h4>预约 / 营业 / 注意</h4>
+                    <ul>
+                      <li>回程 <strong>BA327 + BA287</strong> 已订；booking reference <strong>Z6ITP9</strong>；LHR T5 转机 1h50m。</li>
+                      <li>今天不排 <strong>Villefranche</strong> / <strong>Cap Ferrat</strong>；最多酒店门口海边走 20 分钟。</li>
+                      <li>托运行李和 BA app 信息出发前一天晚上核对。</li>
+                    </ul>
+                  </section>
+                </div>
+              </div>
+            </details>
+
+            <details class="card reco collapsible-card">
+              <summary>
+                <div class="card-summary">
+                  <div class="card-name">打卡 / 最后半小时</div>
+                  <div class="card-meta">最后早晨只做海边、咖啡、退房和机场备选。</div>
+                </div>
+              </summary>
+              <div class="card-body">
+                <div class="reco-sections">
+                  <div class="reco-section">
+                    <h4>最后半小时</h4>
+                    <ul>
+                      <li><strong>Promenade des Anglais</strong> — 最多酒店门口海边走 20 分钟，喝咖啡后回房拿行李。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>机场补救</h4>
+                    <ul>
+                      <li><strong>Chez Pipo</strong> — 如果前几天没吃到 socca，Nice 机场 T1 分店可作为托运行李后的补救。</li>
+                    </ul>
+                  </div>
+                  <div class="reco-section">
+                    <h4>不要加</h4>
+                    <ul>
+                      <li><strong>Vieux Nice / Villefranche / Cap Ferrat</strong> — 今天不要进老城深处，也不要再排外出活动。</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="panel-checklist" role="tabpanel" hidden>
+      <div class="section-header">
+        <h2>计划 Checklist</h2>
+        <p>按预订、交通、餐厅和出发前准备拆分；勾选状态会保存在当前浏览器。</p>
+      </div>
+
+      <div class="checklist-grid">
+        <section class="check-section">
+          <h3>住宿</h3>
+          <div class="check-item">
+            <input id="check-grand-balcon" type="checkbox" data-check-id="grand-balcon" checked>
+            <label for="check-grand-balcon">Toulouse 9/16-9/18：Hôtel Le Grand Balcon<span>2 adults / 1 room；早餐未购买。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-chateau" type="checkbox" data-check-id="chateau" checked>
+            <label for="check-chateau">Château de Goudourville 9/18-9/20<span>两晚都住城堡；确认抵达和离开接送。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-soclo" type="checkbox" data-check-id="soclo" checked>
+            <label for="check-soclo">Toulouse 9/20-9/21：Hôtel SOCLO<span>Check-in 16:00，checkout 12:00。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-nice-hotel" type="checkbox" data-check-id="nice-hotel" checked>
+            <label for="check-nice-hotel">Nice 9/21-9/24：Hôtel Palais de la Méditerranée<span>Confirmation 42322645；13 Promenade des Anglais。</span></label>
+          </div>
+        </section>
+
+        <section class="check-section">
+          <h3>机票</h3>
+          <div class="check-item">
+            <input id="check-ba-out" type="checkbox" data-check-id="ba-out" checked>
+            <label for="check-ba-out">去程 BA284 + BA370：SFO → Toulouse<span>Booking reference Z4KYSK；9/16 16:35 到 TLS。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-easyjet" type="checkbox" data-check-id="easyjet" checked>
+            <label for="check-easyjet">easyJet EJU1626 / U2 1626：TLS → NCE<span>Booking KCPCT44；9/21 12:20-13:30；bag drop 10:20-11:20。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-ba-return" type="checkbox" data-check-id="ba-return" checked>
+            <label for="check-ba-return">回程 BA327 + BA287：Nice → SFO<span>Booking reference Z6ITP9；9/24 11:25 NCE T1 → LHR T5 → 17:40 SFO。</span></label>
+          </div>
+        </section>
+
+        <section class="check-section">
+          <h3>活动与餐厅</h3>
+          <div class="check-item">
+            <input id="check-piano" type="checkbox" data-check-id="piano" checked>
+            <label for="check-piano">Piano aux Jacobins 票<span>9/17 20:00；ticketdirect-1.pdf 保存在手机离线文件里。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-wedding" type="checkbox" data-check-id="wedding" checked>
+            <label for="check-wedding">婚礼请帖 / RSVP 链接<span><a href="https://lynnandguillaume.netlify.app/#travel" target="_blank" rel="noopener">lynnandguillaume.netlify.app/#travel</a></span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-vh-lunch" type="checkbox" data-check-id="vh-lunch">
+            <label for="check-vh-lunch">Victor Hugo Market 午餐<span>9/17 建议 11:45-12:00 到。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-nice-dinner" type="checkbox" data-check-id="nice-dinner">
+            <label for="check-nice-dinner">Nice / Villefranche 晚餐<span>Le Plongeoir、La Mère Germaine、老城小馆按偏好决定。</span></label>
+          </div>
+        </section>
+
+        <section class="check-section">
+          <h3>交通准备</h3>
+          <div class="check-item">
+            <input id="check-train" type="checkbox" data-check-id="train">
+            <label for="check-train">买 Toulouse ↔ Valence d'Agen 火车票<span>重点是 9/18 去城堡、9/20 回 Toulouse。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-chateau-transfer" type="checkbox" data-check-id="chateau-transfer">
+            <label for="check-chateau-transfer">确认 Château taxi service<span>9/18 Valence d'Agen → 城堡；9/20 城堡 → Valence d'Agen / Toulouse。</span></label>
+          </div>
+          <div class="check-item">
+            <input id="check-docs" type="checkbox" data-check-id="docs">
+            <label for="check-docs">出发前核对护照、绿卡、签证和 LHR 转机要求<span>按 British Airways 和英国官方页面再次核对。</span></label>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="panel-tips" role="tabpanel" hidden>
+      <div class="section-header">
+        <h2>预订与贴士</h2>
+        <p>把真正影响当天体验的准备项放在这里。</p>
+      </div>
+
+      <div class="tips-grid">
+        <div class="tip-card">
+          <h3>火车票</h3>
+          <p>重点是 9/18 Toulouse → Valence d'Agen、9/20 Valence d'Agen → Toulouse。9/20 不赶飞机，只要顺利回 Toulouse 过夜即可。</p>
+        </div>
+        <div class="tip-card">
+          <h3>城堡接送</h3>
+          <p>Château de Goudourville 不适合依赖临时 Uber。抵达和离开都提前确认 taxi service 或婚礼接送。</p>
+        </div>
+        <div class="tip-card">
+          <h3>尼斯天气</h3>
+          <p>九月南法 20-25°C，非常舒服。尼斯海水大概率还能游，带泳衣、水鞋和薄外套。</p>
+        </div>
+        <div class="tip-card">
+          <h3>Nice 三天主线</h3>
+          <p>9/21 Nice 本城，9/22 Eze + Nice 放松，9/23 Cours Saleya + Villefranche + Cap Ferrat。Monaco 不放进主线。</p>
+        </div>
+        <div class="tip-card">
+          <h3>现金</h3>
+          <p>大部分地方刷卡。Chez Pipo、La Merenda 这类老店可能更适合备一点现金。</p>
+        </div>
+        <div class="tip-card">
+          <h3>不要硬塞</h3>
+          <p>Carcassonne、A350 tour、Monaco、Cannes、Antibes 都不进主线。体力和本地氛围比多打几个点更值。</p>
         </div>
       </div>
+    </section>
+  </main>
 
-    </div>
-  </div>
+  <script>
+    const tabButtons = document.querySelectorAll(".tab-button");
+    const panels = document.querySelectorAll(".tab-panel");
 
-  <!-- MAP PANEL -->
-  <div class="map-panel">
-    <div class="map-container">
-      <h3>路线图</h3>
-      <svg id="map-svg" viewBox="0 0 440 520" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#1a2a3a"></stop>
-            <stop offset="100%" stop-color="#0f1922"></stop>
-          </linearGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="4" result="blur"></feGaussianBlur>
-            <feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
-          </filter>
-          <filter id="bigGlow">
-            <feGaussianBlur stdDeviation="8" result="blur"></feGaussianBlur>
-            <feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
-          </filter>
-          <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="#c9a96e"></path>
-          </marker>
-        </defs>
-
-        <!-- Background -->
-        <rect x="0" y="0" width="440" height="520" fill="url(#sea)" rx="0"></rect>
-
-        <!-- France landmass -->
-        <path d="M 0,0 L 440,0 L 440,200 Q 400,230 380,270 Q 360,310 340,330 Q 310,360 270,380 Q 240,400 210,410 Q 180,420 150,430 Q 120,440 90,450 Q 60,460 30,470 L 0,480 Z" fill="#1a1f16" stroke="#2a3020" stroke-width="1"></path>
-
-        <!-- Coastline -->
-        <path d="M 440,200 Q 400,230 380,270 Q 360,310 340,330 Q 310,360 270,380 Q 240,400 210,410 Q 180,420 150,430 Q 120,440 90,450 Q 60,460 30,470" fill="none" stroke="#2a4050" stroke-width="2"></path>
-
-        <!-- Labels -->
-        <text x="100" y="440" fill="#3a4a30" font-size="9" font-family="Inter" text-anchor="middle">比利牛斯山</text>
-        <text x="60" y="490" fill="#2a3a4a" font-size="10" font-family="Inter" font-style="italic">西班牙</text>
-        <text x="300" y="470" fill="#2a4050" font-size="10" font-family="Inter" font-style="italic">地中海</text>
-        <text x="12" y="350" fill="#2a4050" font-size="9" font-family="Inter" font-style="italic" writing-mode="tb">大西洋</text>
-        <text x="180" y="30" fill="#555" font-size="9" font-family="Inter" text-anchor="middle" font-style="italic">巴黎 ↑</text>
-
-        <!-- Reference cities -->
-        <circle cx="80" cy="160" r="3" fill="#444" opacity="0.5"></circle>
-        <text x="80" y="150" fill="#555" font-size="8" font-family="Inter" text-anchor="middle" font-style="italic">波尔多</text>
-        <circle cx="320" cy="320" r="3" fill="#444" opacity="0.5"></circle>
-        <text x="320" y="310" fill="#555" font-size="8" font-family="Inter" text-anchor="middle" font-style="italic">马赛</text>
-
-        <!-- ===== ROUTE SEGMENTS ===== -->
-        <!-- Toulouse → Valence d'Agen -->
-        <path class="route-segment" id="route-tou-val" d="M 170,280 L 120,255" stroke="#c9a96e" stroke-width="2.5" fill="none" opacity="0.15" marker-end="url(#arrow)"></path>
-        <text class="route-label" id="label-tou-val" x="135" y="258" fill="#c9a96e" font-size="8" font-family="Inter" opacity="0" text-anchor="middle">火车 1h</text>
-
-        <!-- Toulouse → Carcassonne (day trip) -->
-        <line class="route-segment" id="route-tou-car" x1="170" y1="290" x2="200" y2="340" stroke="#c9a96e" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.15"></line>
-        <text class="route-label" id="label-tou-car" x="196" y="322" fill="#c9a96e" font-size="8" font-family="Inter" opacity="0">41min</text>
-
-        <!-- Toulouse → Nice (flight) -->
-        <path class="route-segment" id="route-tou-nic" d="M 180,275 C 260,220 340,200 395,230" stroke="#c9a96e" stroke-width="2" fill="none" stroke-dasharray="8,5" opacity="0.15" marker-end="url(#arrow)"></path>
-        <text class="route-label" id="label-tou-nic" x="290" y="208" fill="#c9a96e" font-size="8" font-family="Inter" opacity="0" text-anchor="middle">飞机 1.5h</text>
-
-        <!-- Nice周边连接线 -->
-        <line class="route-segment" id="route-nic-vil" x1="400" y1="245" x2="405" y2="268" stroke="#6ba3d6" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.1"></line>
-        <line class="route-segment" id="route-nic-eze" x1="405" y1="245" x2="415" y2="275" stroke="#6ba3d6" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.1"></line>
-        <line class="route-segment" id="route-nic-mon" x1="410" y1="240" x2="425" y2="260" stroke="#6ba3d6" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.1"></line>
-
-        <!-- ===== CITIES ===== -->
-        <!-- Valence d'Agen -->
-        <g class="map-city" id="city-valence">
-          <circle class="wedding-pulse" cx="120" cy="255" r="8"></circle>
-          <circle class="city-glow" cx="120" cy="255" r="12" fill="#c9a96e" opacity="0.25"></circle>
-          <circle class="city-dot" cx="120" cy="255" r="6" fill="#c9a96e" opacity="0.5"></circle>
-          <circle cx="120" cy="255" r="3" fill="#fff" opacity="0.8"></circle>
-          <text class="city-label" x="120" y="243" fill="#aaa" font-size="10" font-family="Inter" font-weight="600" text-anchor="middle">Valence d'Agen</text>
-          <text x="120" y="231" fill="#c9a96e" font-size="8" font-family="Inter" text-anchor="middle" opacity="0.7">婚礼 9/19</text>
-        </g>
-
-        <!-- Toulouse -->
-        <g class="map-city" id="city-toulouse">
-          <circle class="city-glow" cx="170" cy="282" r="14" fill="#c9a96e" opacity="0.25"></circle>
-          <circle class="city-dot" cx="170" cy="282" r="8" fill="#c9a96e" opacity="0.6"></circle>
-          <circle cx="170" cy="282" r="4" fill="#fff"></circle>
-          <text class="city-label" x="170" y="305" fill="#ccc" font-size="12" font-family="Inter" font-weight="700" text-anchor="middle">图卢兹</text>
-          <text x="170" y="318" fill="#c9a96e" font-size="8" font-family="Inter" text-anchor="middle" opacity="0.7">9/16-18</text>
-        </g>
-
-        <!-- Carcassonne -->
-        <g class="map-city" id="city-carcassonne">
-          <circle class="city-glow" cx="205" cy="345" r="10" fill="#c9a96e" opacity="0.25"></circle>
-          <circle class="city-dot" cx="205" cy="345" r="5" fill="#c9a96e" opacity="0.5"></circle>
-          <circle cx="205" cy="345" r="2.5" fill="#fff" opacity="0.8"></circle>
-          <text class="city-label" x="225" y="352" fill="#aaa" font-size="10" font-family="Inter">卡尔卡松</text>
-          <text x="225" y="365" fill="#888" font-size="8" font-family="Inter">火车 41min</text>
-        </g>
-
-        <!-- Nice -->
-        <g class="map-city" id="city-nice">
-          <circle class="city-glow" cx="400" cy="235" r="14" fill="#c9a96e" opacity="0.25"></circle>
-          <circle class="city-dot" cx="400" cy="235" r="8" fill="#c9a96e" opacity="0.6"></circle>
-          <circle cx="400" cy="235" r="4" fill="#fff"></circle>
-          <text class="city-label" x="380" y="225" fill="#ccc" font-size="12" font-family="Inter" font-weight="700" text-anchor="end">尼斯</text>
-          <text x="380" y="212" fill="#c9a96e" font-size="8" font-family="Inter" text-anchor="end" opacity="0.7">9/20-24</text>
-        </g>
-
-        <!-- Villefranche -->
-        <g class="map-city" id="city-villefranche">
-          <circle class="city-glow" cx="408" cy="272" r="8" fill="#6ba3d6" opacity="0.2"></circle>
-          <circle class="city-dot" cx="408" cy="272" r="4" fill="#6ba3d6" opacity="0.6"></circle>
-          <circle cx="408" cy="272" r="2" fill="#fff" opacity="0.8"></circle>
-          <text class="city-label" x="398" y="287" fill="#6ba3d6" font-size="8" font-family="Inter" text-anchor="end">Villefranche</text>
-        </g>
-
-        <!-- Eze -->
-        <g class="map-city" id="city-eze">
-          <circle class="city-glow" cx="418" cy="280" r="8" fill="#6ba3d6" opacity="0.2"></circle>
-          <circle class="city-dot" cx="418" cy="280" r="4" fill="#6ba3d6" opacity="0.6"></circle>
-          <circle cx="418" cy="280" r="2" fill="#fff" opacity="0.8"></circle>
-          <text class="city-label" x="432" y="285" fill="#6ba3d6" font-size="8" font-family="Inter">Eze</text>
-        </g>
-
-        <!-- Monaco -->
-        <g class="map-city" id="city-monaco">
-          <circle class="city-glow" cx="428" cy="264" r="8" fill="#6ba3d6" opacity="0.2"></circle>
-          <circle class="city-dot" cx="428" cy="264" r="4" fill="#6ba3d6" opacity="0.6"></circle>
-          <circle cx="428" cy="264" r="2" fill="#fff" opacity="0.8"></circle>
-          <text class="city-label" x="428" y="254" fill="#6ba3d6" font-size="8" font-family="Inter" text-anchor="middle">摩纳哥</text>
-        </g>
-
-        <!-- Flying dot (animated between cities) -->
-        <circle class="flying-dot" id="flying-dot" cx="0" cy="0" r="3" fill="#fff" filter="url(#glow)"></circle>
-
-        <!-- Legend -->
-        <line x1="15" y1="50" x2="40" y2="50" stroke="#c9a96e" stroke-width="2.5"></line>
-        <text x="45" y="54" fill="#888" font-size="8" font-family="Inter">主路线</text>
-        <line x1="15" y1="65" x2="40" y2="65" stroke="#c9a96e" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.5"></line>
-        <text x="45" y="69" fill="#888" font-size="8" font-family="Inter">一日游/飞机</text>
-        <circle cx="27" cy="80" r="3.5" fill="#6ba3d6" opacity="0.8"></circle>
-        <text x="45" y="84" fill="#888" font-size="8" font-family="Inter">尼斯周边</text>
-      </svg>
-
-      <!-- Info popup -->
-      <div class="map-info" id="map-info">
-        <div class="info-date" id="info-date"></div>
-        <div class="info-city" id="info-city"></div>
-        <div class="info-desc" id="info-desc"></div>
-        <div class="info-transport" id="info-transport"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ============ BOTTOM SECTIONS ============ -->
-<div class="bottom-sections">
-  <div class="section-header" style="text-align:center;">
-    <h2>海滩排名</h2>
-    <p>尼斯周边海滩，按综合体验排序</p>
-  </div>
-  <div class="beach-list">
-    <div class="beach-item">
-      <div class="beach-rank">1</div>
-      <div class="beach-info">
-        <h4>Plage des Marinieres, Villefranche-sur-Mer</h4>
-        <p>沙滩、避风港湾、碧绿清澈的海水。综合最佳。火车离尼斯6分钟。</p>
-      </div>
-    </div>
-    <div class="beach-item">
-      <div class="beach-rank">2</div>
-      <div class="beach-info">
-        <h4>Paloma Beach, Cap Ferrat</h4>
-        <p>僻静小海湾，环境优美。如果去 Cap Ferrat 值得顺路。</p>
-      </div>
-    </div>
-    <div class="beach-item">
-      <div class="beach-rank">3</div>
-      <div class="beach-info">
-        <h4>Plage Mala, Cap d'Ail</h4>
-        <p>尼斯和摩纳哥之间的隐藏宝藏。要走陡峭楼梯下去——也正因如此人少。</p>
-      </div>
-    </div>
-    <div class="beach-item">
-      <div class="beach-rank">4</div>
-      <div class="beach-info">
-        <h4>Castel Plage / Ponchettes, Nice</h4>
-        <p>经典的天使湾海滨大道背景。标志性但是石子滩——带水鞋或租沙滩垫。</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============ RESERVATION TIMELINE ============ -->
-  <div class="section-header" style="text-align:center;">
-    <h2>预订时间表</h2>
-    <p>按紧急程度排列，别错过窗口</p>
-  </div>
-  <div style="background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 40px;">
-    <div class="reservation-timeline">
-      <div class="rt-item urgent">
-        <div class="rt-time">现在（2026年4月）— 紧急</div>
-        <div class="rt-desc">
-          <strong>Mirazur</strong>（Menton ⭐⭐⭐）— 需提前2-3个月，现在就订！工作日午餐最容易。mirazur.fr 或 Resy<br>
-          <strong>国际机票</strong> — SFO↔CDG 法航/United open jaw 联程票，越早越便宜<br>
-          <strong>酒店</strong> — 尤其 Hôtel du Couvent / La Pérouse / Welcome Hotel，9月旺季尾声热门房型先到先得
-        </div>
-      </div>
-      <div class="rt-item">
-        <div class="rt-time">5月</div>
-        <div class="rt-desc">
-          <strong>Flaveur</strong>（Nice ⭐⭐，仅20座）+ <strong>Restaurant JAN</strong>（Nice ⭐，仅20座）<br>
-          <strong>PY-R</strong>（Toulouse ⭐⭐）<br>
-          <strong>easyJet 内部航班</strong> TLS→NCE（9/20）
-        </div>
-      </div>
-      <div class="rt-item">
-        <div class="rt-time">6-7月</div>
-        <div class="rt-desc">
-          <strong>La Table de Franck Putelat</strong>（Carcassonne ⭐⭐，TheFork 可订）<br>
-          <strong>Michel Sarran</strong>（Toulouse ⭐）<br>
-          <strong>La Mère Germaine</strong>（Villefranche，海景位）<br>
-          <strong>Monte-Carlo Country Club</strong> — 确认9月访客打球政策
-        </div>
-      </div>
-      <div class="rt-item">
-        <div class="rt-time">到达尼斯第一天</div>
-        <div class="rt-desc">
-          <strong>La Merenda</strong> — 无电话无网上预订，到店登记后几天的位<br>
-          <strong>Nice Lawn Tennis Club</strong> — 提前24小时预约即可
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="section-header" style="text-align:center;">
-    <h2>实用贴士</h2>
-    <p>出发前需要准备的事情</p>
-  </div>
-  <div class="tips-grid">
-    <div class="tip-card">
-      <div class="tip-icon">🚂</div>
-      <div class="tip-title">火车票</div>
-      <div class="tip-text">在 <strong>sncf-connect.com</strong> 买。提前买便宜很多（图卢兹→卡尔卡松最低1欧）。现在就可以买了。</div>
-    </div>
-    <div class="tip-card">
-      <div class="tip-icon">✈️</div>
-      <div class="tip-title">机票</div>
-      <div class="tip-text">图卢兹→尼斯内陆航班约1.5小时。看看 easyJet / Transavia / Air France。回程从尼斯直飞。</div>
-    </div>
-    <div class="tip-card">
-      <div class="tip-icon">🏨</div>
-      <div class="tip-title">住宿</div>
-      <div class="tip-text">Valence d'Agen：跟新人确认 Hotel Tout Va Bien 预留房间。尼斯：住 Vieux Nice 或 Port 附近最方便。</div>
-    </div>
-    <div class="tip-card">
-      <div class="tip-icon">🌡️</div>
-      <div class="tip-title">天气</div>
-      <div class="tip-text">九月南法 20-25°C，非常舒服。带一件薄外套。尼斯海水 23-24°C，可以游泳。</div>
-    </div>
-    <div class="tip-card">
-      <div class="tip-icon">🚫🚗</div>
-      <div class="tip-title">不需要租车</div>
-      <div class="tip-text">全程火车+飞机+公交搞定。尼斯周边 Eze/摩纳哥/Villefranche 都有公共交通。</div>
-    </div>
-    <div class="tip-card">
-      <div class="tip-icon">💳</div>
-      <div class="tip-title">付款</div>
-      <div class="tip-text">大部分地方刷卡。<strong>Chez Pipo + La Merenda 只收现金</strong>，到尼斯后取一点欧元备用。</div>
-    </div>
-    <div class="tip-card">
-      <div class="tip-icon">🎾</div>
-      <div class="tip-title">网球</div>
-      <div class="tip-text"><strong>Monte-Carlo Country Club</strong>（大师赛球场）访客可租场 €60/人。<strong>Nice LTC</strong> 提前24h 预约即可，€25 起。带上球拍！</div>
-    </div>
-    <div class="tip-card">
-      <div class="tip-icon">🍽️</div>
-      <div class="tip-title">餐厅预订</div>
-      <div class="tip-text"><strong>Mirazur 现在就要订。</strong>Flaveur、JAN 提前1-2个月。La Merenda 到店登记。详见上方"预订时间表"。</div>
-    </div>
-  </div>
-
-  <div class="footer">
-    南法婚礼之旅 • 2026年9月<br>
-    Bon voyage!
-  </div>
-</div>
-
-<script>
-(function() {
-  // City data for map info panel
-  const cityData = {
-    toulouse: {
-      name: '图卢兹 Toulouse',
-      dates: { 1: '9月16日', 2: '9月17日' },
-      desc: '玫瑰之城 — 粉色砖墙、美食、文艺',
-      transport: '',
-      cx: 170, cy: 282
-    },
-    carcassonne: {
-      name: '卡尔卡松 Carcassonne',
-      dates: { 3: '9月18日' },
-      desc: '欧洲最大中世纪城堡，UNESCO 世界遗产',
-      transport: '🚂 从图卢兹火车 41分钟',
-      cx: 205, cy: 345
-    },
-    valence: {
-      name: 'Valence d\'Agen',
-      dates: { 4: '9月19日' },
-      desc: '城堡婚礼 — 今天的主角不是城市',
-      transport: '🚂 从图卢兹火车 约1小时',
-      cx: 120, cy: 255
-    },
-    nice: {
-      name: '尼斯 Nice',
-      dates: { 5: '9月20日', 8: '9月23日', 9: '9月24日' },
-      desc: '蔚蓝海岸首都 — 海水23°C，完美九月',
-      transport: '✈️ 从图卢兹飞 1.5小时',
-      cx: 400, cy: 235
-    },
-    villefranche: {
-      name: 'Villefranche-sur-Mer',
-      dates: { 6: '9月21日' },
-      desc: '蔚蓝海岸最美港湾 — 彩色房子与碧绿海水',
-      transport: '🚂 从尼斯火车 6分钟',
-      cx: 408, cy: 272
-    },
-    eze: {
-      name: 'Eze + 摩纳哥',
-      dates: { 7: '9月22日' },
-      desc: '悬崖鹰巢村 → 超级游艇小国',
-      transport: '🚌 从尼斯公交 30分钟',
-      cx: 418, cy: 280
-    }
-  };
-
-  // Route lighting config: which segments light up for each city
-  const routeConfig = {
-    toulouse: { segments: [], labels: [] },
-    carcassonne: { segments: ['route-tou-car'], labels: ['label-tou-car'] },
-    valence: { segments: ['route-tou-val'], labels: ['label-tou-val'] },
-    nice: { segments: ['route-tou-nic'], labels: ['label-tou-nic'] },
-    villefranche: { segments: ['route-tou-nic', 'route-nic-vil'], labels: ['label-tou-nic'] },
-    eze: { segments: ['route-tou-nic', 'route-nic-eze', 'route-nic-mon'], labels: ['label-tou-nic'] },
-  };
-
-  let currentCity = null;
-  let flyingAnimation = null;
-
-  // Get all day elements
-  const days = document.querySelectorAll('.day[data-city]');
-  const mapInfo = document.getElementById('map-info');
-
-  function activateCity(cityId, dayNum) {
-    if (currentCity === cityId + '-' + dayNum) return;
-
-    const prevCity = currentCity ? currentCity.split('-')[0] : null;
-    currentCity = cityId + '-' + dayNum;
-
-    // Dim all days, activate current
-    days.forEach(d => {
-      d.classList.remove('active');
-      d.classList.add('dimmed');
-    });
-    const activeDay = document.querySelector(`.day[data-day="${dayNum}"]`);
-    if (activeDay) {
-      activeDay.classList.remove('dimmed');
-      activeDay.classList.add('active');
-    }
-
-    // Reset all cities on map
-    document.querySelectorAll('.map-city').forEach(c => c.classList.remove('active'));
-    // Reset all route segments
-    document.querySelectorAll('.route-segment').forEach(s => {
-      s.style.opacity = '0.15';
-    });
-    document.querySelectorAll('.route-label').forEach(l => {
-      l.style.opacity = '0';
-    });
-    // Reset wedding pulse
-    document.querySelectorAll('.wedding-pulse').forEach(p => p.classList.remove('active'));
-
-    // Activate current city
-    const cityEl = document.getElementById('city-' + cityId);
-    if (cityEl) cityEl.classList.add('active');
-
-    // Also activate Nice when visiting suburbs
-    if (['villefranche', 'eze'].includes(cityId)) {
-      const niceEl = document.getElementById('city-nice');
-      if (niceEl) niceEl.classList.add('active');
-    }
-    // Activate Monaco when visiting Eze day
-    if (cityId === 'eze') {
-      const monacoEl = document.getElementById('city-monaco');
-      if (monacoEl) monacoEl.classList.add('active');
-    }
-
-    // Light up route segments
-    const routes = routeConfig[cityId];
-    if (routes) {
-      routes.segments.forEach(id => {
-        const seg = document.getElementById(id);
-        if (seg) seg.style.opacity = '1';
+    tabButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const targetId = button.dataset.tab;
+        tabButtons.forEach((item) => {
+          const active = item === button;
+          item.classList.toggle("active", active);
+          item.setAttribute("aria-selected", String(active));
+        });
+        panels.forEach((panel) => {
+          panel.hidden = panel.id !== targetId;
+        });
       });
-      routes.labels.forEach(id => {
-        const lab = document.getElementById(id);
-        if (lab) lab.style.opacity = '0.8';
+    });
+
+    const checks = document.querySelectorAll("[data-check-id]");
+    checks.forEach((check) => {
+      const key = `france-trip-2026:${check.dataset.checkId}`;
+      const stored = localStorage.getItem(key);
+      if (stored !== null) check.checked = stored === "true";
+      check.addEventListener("change", () => {
+        localStorage.setItem(key, String(check.checked));
       });
-    }
-
-    // Wedding day special
-    if (cityId === 'valence') {
-      document.querySelectorAll('.wedding-pulse').forEach(p => p.classList.add('active'));
-    }
-
-    // Flying dot animation
-    if (prevCity && prevCity !== cityId) {
-      animateFlyingDot(prevCity, cityId);
-    }
-
-    // Update info panel
-    const data = cityData[cityId];
-    if (data) {
-      document.getElementById('info-date').textContent = data.dates[dayNum] || Object.values(data.dates)[0];
-      document.getElementById('info-city').textContent = data.name;
-      document.getElementById('info-desc').textContent = data.desc;
-      document.getElementById('info-transport').textContent = data.transport;
-      mapInfo.classList.add('visible');
-    }
-  }
-
-  function deactivateAll() {
-    currentCity = null;
-    days.forEach(d => {
-      d.classList.remove('active', 'dimmed');
     });
-    document.querySelectorAll('.map-city').forEach(c => c.classList.remove('active'));
-    document.querySelectorAll('.route-segment').forEach(s => s.style.opacity = '0.15');
-    document.querySelectorAll('.route-label').forEach(l => l.style.opacity = '0');
-    document.querySelectorAll('.wedding-pulse').forEach(p => p.classList.remove('active'));
-    mapInfo.classList.remove('visible');
-    const dot = document.getElementById('flying-dot');
-    dot.classList.remove('visible');
-  }
 
-  function animateFlyingDot(fromCity, toCity) {
-    const from = cityData[fromCity];
-    const to = cityData[toCity];
-    if (!from || !to) return;
+    const routePlaceLinks = [
+      ["Nice Côte d'Azur Airport Terminal 1", "https://www.google.com/maps/search/?api=1&query=Nice%20C%C3%B4te%20d%E2%80%99Azur%20Airport%20Terminal%201%20France"],
+      ["Nice Côte d'Azur Airport", "https://www.google.com/maps/search/?api=1&query=Nice%20C%C3%B4te%20d%E2%80%99Azur%20Airport%20France"],
+      ["Nice Côte d'Azur 机场", "https://www.google.com/maps/search/?api=1&query=Nice%20C%C3%B4te%20d%E2%80%99Azur%20Airport%20France"],
+      ["Toulouse-Blagnac Airport", "https://www.google.com/maps/search/?api=1&query=Toulouse-Blagnac%20Airport%20Toulouse%20France"],
+      ["Toulouse-Blagnac 机场", "https://www.google.com/maps/search/?api=1&query=Toulouse-Blagnac%20Airport%20Toulouse%20France"],
+      ["Hôtel Palais de la Méditerranée", "https://www.google.com/maps/search/?api=1&query=H%C3%B4tel%20Hyatt%20Regency%20Nice%20Palais%20de%20la%20M%C3%A9diterran%C3%A9e%20Nice%20France"],
+      ["Château de Goudourville", "https://www.google.com/maps/search/?api=1&query=Ch%C3%A2teau%20de%20Goudourville%20France"],
+      ["Jardin Exotique d'Eze", "https://www.google.com/maps/search/?api=1&query=Jardin%20Exotique%20d'Eze%20%C3%88ze%20France"],
+      ["Fragonard Eze-Village", "https://www.google.com/maps/search/?api=1&query=Fragonard%20%C3%88ze-Village%20France"],
+      ["Villefranche-sur-Mer", "https://www.google.com/maps/search/?api=1&query=Villefranche-sur-Mer%20France"],
+      ["Plage des Marinières", "https://www.google.com/maps/search/?api=1&query=Plage%20des%20Marini%C3%A8res%20Villefranche-sur-Mer%20France"],
+      ["London Heathrow T5", "https://www.google.com/maps/search/?api=1&query=London%20Heathrow%20Terminal%205%20United%20Kingdom"],
+      ["LHR Terminal 5", "https://www.google.com/maps/search/?api=1&query=London%20Heathrow%20Terminal%205%20United%20Kingdom"],
+      ["SFO Terminal I", "https://www.google.com/maps/search/?api=1&query=San%20Francisco%20International%20Airport%20International%20Terminal%20California%20USA"],
+      ["NCE Terminal 1", "https://www.google.com/maps/search/?api=1&query=Nice%20C%C3%B4te%20d%E2%80%99Azur%20Airport%20Terminal%201%20France"],
+      ["Toulouse Matabiau", "https://www.google.com/maps/search/?api=1&query=Toulouse%20Matabiau%20Station%20Toulouse%20France"],
+      ["Place du Capitole", "https://www.google.com/maps/search/?api=1&query=Place%20du%20Capitole%20Toulouse%20France"],
+      ["Marché Victor Hugo", "https://www.google.com/maps/search/?api=1&query=March%C3%A9%20Victor%20Hugo%20Toulouse%20France"],
+      ["Cloître des Jacobins", "https://www.google.com/maps/search/?api=1&query=Couvent%20des%20Jacobins%20Toulouse%20France"],
+      ["Promenade des Anglais", "https://www.google.com/maps/search/?api=1&query=Promenade%20des%20Anglais%20Nice%20France"],
+      ["Rue des Filatiers", "https://www.google.com/maps/search/?api=1&query=Rue%20des%20Filatiers%20Toulouse%20France"],
+      ["Rue Pharaon", "https://www.google.com/maps/search/?api=1&query=Rue%20Pharaon%20Toulouse%20France"],
+      ["Valence d'Agen", "https://www.google.com/maps/search/?api=1&query=Gare%20de%20Valence%20d%27Agen%20France"],
+      ["Le Grand Balcon", "https://www.google.com/maps/search/?api=1&query=H%C3%B4tel%20Le%20Grand%20Balcon%20Toulouse%20France"],
+      ["Saint-Cyprien", "https://www.google.com/maps/search/?api=1&query=Saint-Cyprien%20Toulouse%20France"],
+      ["Eze-sur-Mer", "https://www.google.com/maps/search/?api=1&query=%C3%88ze-sur-Mer%20France"],
+      ["Nietzsche Path", "https://www.google.com/maps/search/?api=1&query=Nietzsche%20Path%20%C3%88ze%20France"],
+      ["Jardin Exotique", "https://www.google.com/maps/search/?api=1&query=Jardin%20Exotique%20d%27Eze%20%C3%88ze%20France"],
+      ["Eze Village", "https://www.google.com/maps/search/?api=1&query=%C3%88ze%20Village%20France"],
+      ["Èze", "https://www.google.com/maps/search/?api=1&query=%C3%88ze%20France"],
+      ["Cours Saleya", "https://www.google.com/maps/search/?api=1&query=Cours%20Saleya%20Nice%20France"],
+      ["Rue Obscure", "https://www.google.com/maps/search/?api=1&query=Rue%20Obscure%20Villefranche-sur-Mer%20France"],
+      ["Villa Ephrussi", "https://www.google.com/maps/search/?api=1&query=Villa%20Ephrussi%20de%20Rothschild%20Saint-Jean-Cap-Ferrat%20France"],
+      ["Saint-Hospice", "https://www.google.com/maps/search/?api=1&query=Pointe%20Saint-Hospice%20Saint-Jean-Cap-Ferrat%20France"],
+      ["Cap Ferrat", "https://www.google.com/maps/search/?api=1&query=Saint-Jean-Cap-Ferrat%20France"],
+      ["Villefranche", "https://www.google.com/maps/search/?api=1&query=Villefranche-sur-Mer%20France"],
+      ["Hôtel SOCLO", "https://www.google.com/maps/search/?api=1&query=H%C3%B4tel%20SOCLO%20Toulouse%20France"],
+      ["Les Carmes", "https://www.google.com/maps/search/?api=1&query=Les%20Carmes%20Toulouse%20France"],
+      ["Capitole", "https://www.google.com/maps/search/?api=1&query=Place%20du%20Capitole%20Toulouse%20France"],
+      ["Esquirol", "https://www.google.com/maps/search/?api=1&query=Esquirol%20Toulouse%20France"],
+      ["Garonne", "https://www.google.com/maps/search/?api=1&query=Garonne%20Toulouse%20France"],
+      ["Jacobins", "https://www.google.com/maps/search/?api=1&query=Couvent%20des%20Jacobins%20Toulouse%20France"],
+      ["Vieux Nice", "https://www.google.com/maps/search/?api=1&query=Vieux%20Nice%20Nice%20France"],
+      ["Beaulieu", "https://www.google.com/maps/search/?api=1&query=Beaulieu-sur-Mer%20France"],
+      ["Promenade", "https://www.google.com/maps/search/?api=1&query=Promenade%20des%20Anglais%20Nice%20France"],
+      ["Toulouse", "https://www.google.com/maps/search/?api=1&query=Toulouse%20France"],
+      ["Monaco", "https://www.google.com/maps/search/?api=1&query=Monaco"],
+      ["Nice", "https://www.google.com/maps/search/?api=1&query=Nice%20France"],
+      ["TLS", "https://www.google.com/maps/search/?api=1&query=Toulouse-Blagnac%20Airport%20Toulouse%20France"],
+      ["NCE", "https://www.google.com/maps/search/?api=1&query=Nice%20C%C3%B4te%20d%E2%80%99Azur%20Airport%20France"],
+      ["SFO", "https://www.google.com/maps/search/?api=1&query=San%20Francisco%20International%20Airport%20California%20USA"]
+    ].sort((a, b) => b[0].length - a[0].length);
 
-    const dot = document.getElementById('flying-dot');
-    dot.classList.add('visible');
+    const recoPlaceLinks = [
+      ["Jardin Exotique d'Eze", "https://www.google.com/maps/search/?api=1&query=Jardin%20Exotique%20d%27Eze%20Eze%20France"],
+      ["Fragonard Eze-Village", "https://www.google.com/maps/search/?api=1&query=Fragonard%20Eze-Village%20Eze%20France"],
+      ["Château de Goudourville", "https://www.google.com/maps/search/?api=1&query=Ch%C3%A2teau%20de%20Goudourville%20France"],
+      ["La Maison de la Violette", "https://www.google.com/maps/search/?api=1&query=La%20Maison%20de%20la%20Violette%20Toulouse%20France"],
+      ["Allegory Coffee Bar", "https://www.google.com/maps/search/?api=1&query=Allegory%20Coffee%20Bar%20Toulouse%20France"],
+      ["Le Café de Toulouse", "https://www.google.com/maps/search/?api=1&query=Le%20Caf%C3%A9%20de%20Toulouse%20Toulouse%20France"],
+      ["Marché Victor Hugo", "https://www.google.com/maps/search/?api=1&query=March%C3%A9%20Victor%20Hugo%20Toulouse%20France"],
+      ["Marché des Carmes", "https://www.google.com/maps/search/?api=1&query=March%C3%A9%20des%20Carmes%20Toulouse%20France"],
+      ["Le Genty Magre", "https://www.google.com/maps/search/?api=1&query=Le%20Genty%20Magre%20Toulouse%20France"],
+      ["L'Heure du Singe", "https://www.google.com/maps/search/?api=1&query=L%27Heure%20du%20Singe%20Toulouse%20France"],
+      ["La Chèvre d'Or", "https://www.google.com/maps/search/?api=1&query=La%20Ch%C3%A8vre%20d%27Or%20Eze%20France"],
+      ["La Part des Anges", "https://www.google.com/maps/search/?api=1&query=La%20Part%20des%20Anges%20Nice%20France"],
+      ["La Mère Germaine", "https://www.google.com/maps/search/?api=1&query=La%20M%C3%A8re%20Germaine%20Villefranche-sur-Mer%20France"],
+      ["Villa Ephrussi", "https://www.google.com/maps/search/?api=1&query=Villa%20Ephrussi%20de%20Rothschild%20Saint-Jean-Cap-Ferrat%20France"],
+      ["Au Père Louis", "https://www.google.com/maps/search/?api=1&query=Au%20P%C3%A8re%20Louis%20Toulouse%20France"],
+      ["L'Impériale", "https://www.google.com/maps/search/?api=1&query=L%27Imp%C3%A9riale%20March%C3%A9%20Victor%20Hugo%20Toulouse%20France"],
+      ["Le Café Cerise", "https://www.google.com/maps/search/?api=1&query=Le%20Caf%C3%A9%20Cerise%20Toulouse%20France"],
+      ["Bar des Oiseaux", "https://www.google.com/maps/search/?api=1&query=Bar%20des%20Oiseaux%20Nice%20France"],
+      ["Cours Saleya", "https://www.google.com/maps/search/?api=1&query=Cours%20Saleya%20Nice%20France"],
+      ["Mayssa Beach", "https://www.google.com/maps/search/?api=1&query=Mayssa%20Beach%20Villefranche-sur-Mer%20France"],
+      ["Paloma Beach", "https://www.google.com/maps/search/?api=1&query=Paloma%20Beach%20Saint-Jean-Cap-Ferrat%20France"],
+      ["Saint-Hospice", "https://www.google.com/maps/search/?api=1&query=Saint-Hospice%20Saint-Jean-Cap-Ferrat%20France"],
+      ["Hôtel SOCLO", "https://www.google.com/maps/search/?api=1&query=H%C3%B4tel%20SOCLO%20Toulouse%20France"],
+      ["Le Bibent", "https://www.google.com/maps/search/?api=1&query=Le%20Bibent%20Toulouse%20France"],
+      ["Les Illustres", "https://www.google.com/maps/search/?api=1&query=Les%20Illustres%20Toulouse%20France"],
+      ["Le Magret", "https://www.google.com/maps/search/?api=1&query=Le%20Magret%20March%C3%A9%20Victor%20Hugo%20Toulouse%20France"],
+      ["Café Manine", "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9%20Manine%20Toulouse%20France"],
+      ["Les Carmes", "https://www.google.com/maps/search/?api=1&query=Les%20Carmes%20Toulouse%20France"],
+      ["Château Eza", "https://www.google.com/maps/search/?api=1&query=Ch%C3%A2teau%20Eza%20Eze%20France"],
+      ["Babel Babel", "https://www.google.com/maps/search/?api=1&query=Babel%20Babel%20Nice%20France"],
+      ["La Merenda", "https://www.google.com/maps/search/?api=1&query=La%20Merenda%20Nice%20France"],
+      ["Baia Bella", "https://www.google.com/maps/search/?api=1&query=Baia%20Bella%20Beaulieu-sur-Mer%20France"],
+      ["Nasdrovia", "https://www.google.com/maps/search/?api=1&query=Nasdrovia%20Toulouse%20France"],
+      ["Chez Pipo", "https://www.google.com/maps/search/?api=1&query=Chez%20Pipo%20Nice%20France"],
+      ["Auvillar", "https://www.google.com/maps/search/?api=1&query=Auvillar%20France"],
+      ["Moissac", "https://www.google.com/maps/search/?api=1&query=Moissac%20France"]
+    ].sort((a, b) => b[0].length - a[0].length);
 
-    const startX = from.cx, startY = from.cy;
-    const endX = to.cx, endY = to.cy;
-    const duration = 600;
-    const startTime = performance.now();
+    function linkRoutePlaceText(textNode) {
+      let remaining = textNode.nodeValue;
+      const fragment = document.createDocumentFragment();
+      let changed = false;
 
-    if (flyingAnimation) cancelAnimationFrame(flyingAnimation);
+      while (remaining.length > 0) {
+        let match = null;
+        routePlaceLinks.forEach(([label, url]) => {
+          const index = remaining.indexOf(label);
+          if (index === -1) return;
+          if (!match || index < match.index || (index === match.index && label.length > match.label.length)) {
+            match = { index, label, url };
+          }
+        });
 
-    function animate(time) {
-      const elapsed = time - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      // Ease out cubic
-      const t = 1 - Math.pow(1 - progress, 3);
-
-      // Arc path (slight curve up)
-      const midY = Math.min(startY, endY) - 30;
-      const x = startX + (endX - startX) * t;
-      const y = startY * (1 - t) * (1 - t) + midY * 2 * (1 - t) * t + endY * t * t;
-
-      dot.setAttribute('cx', x);
-      dot.setAttribute('cy', y);
-
-      if (progress < 1) {
-        flyingAnimation = requestAnimationFrame(animate);
-      } else {
-        setTimeout(() => dot.classList.remove('visible'), 300);
-      }
-    }
-    flyingAnimation = requestAnimationFrame(animate);
-  }
-
-  // IntersectionObserver
-  const observerOptions = {
-    root: null,
-    rootMargin: '-30% 0px -50% 0px',
-    threshold: 0
-  };
-
-  const observer = new IntersectionObserver((entries) => {
-    let anyActive = false;
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        anyActive = true;
-        const city = entry.target.dataset.city;
-        const day = entry.target.dataset.day;
-        activateCity(city, day);
-      }
-    });
-  }, observerOptions);
-
-  days.forEach(day => observer.observe(day));
-
-  // Initial state: no city active, all normal
-  deactivateAll();
-
-  // When scrolling back to top (above all days), deactivate
-  const sentinel = document.querySelector('.section-header');
-  if (sentinel) {
-    const topObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          deactivateAll();
+        if (!match) {
+          fragment.append(document.createTextNode(remaining));
+          break;
         }
-      });
-    }, { root: null, rootMargin: '0px', threshold: 0.5 });
-    topObserver.observe(sentinel);
-  }
-})();
-</script>
 
+        if (match.index > 0) {
+          fragment.append(document.createTextNode(remaining.slice(0, match.index)));
+        }
+
+        const link = document.createElement("a");
+        link.href = match.url;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = match.label;
+        fragment.append(link);
+        remaining = remaining.slice(match.index + match.label.length);
+        changed = true;
+      }
+
+      if (changed) textNode.replaceWith(fragment);
+    }
+
+    function linkRecoPlaceText(textNode) {
+      let remaining = textNode.nodeValue;
+      const fragment = document.createDocumentFragment();
+      let changed = false;
+
+      while (remaining.length > 0) {
+        let match = null;
+        recoPlaceLinks.forEach(([label, url]) => {
+          const index = remaining.indexOf(label);
+          if (index === -1) return;
+          if (!match || index < match.index || (index === match.index && label.length > match.label.length)) {
+            match = { index, label, url };
+          }
+        });
+
+        if (!match) {
+          fragment.append(document.createTextNode(remaining));
+          break;
+        }
+
+        if (match.index > 0) {
+          fragment.append(document.createTextNode(remaining.slice(0, match.index)));
+        }
+
+        const link = document.createElement("a");
+        link.href = match.url;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = match.label;
+        fragment.append(link);
+        remaining = remaining.slice(match.index + match.label.length);
+        changed = true;
+      }
+
+      if (changed) textNode.replaceWith(fragment);
+    }
+
+    function linkPlaceTextInContainers(selector, linker) {
+      document.querySelectorAll(selector).forEach((container) => {
+        const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+          acceptNode(node) {
+            if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+            if (node.parentElement && node.parentElement.closest("a")) return NodeFilter.FILTER_REJECT;
+            return NodeFilter.FILTER_ACCEPT;
+          }
+        });
+
+        const textNodes = [];
+        while (walker.nextNode()) textNodes.push(walker.currentNode);
+        textNodes.forEach(linker);
+      });
+    }
+
+    linkPlaceTextInContainers(".card.route .card-meta, .card.route .card-text, .card.route .route-plan, .card.city-primer .card-meta, .card.city-primer .card-text", linkRoutePlaceText);
+    linkPlaceTextInContainers(".card.reco .card-meta, .card.reco .card-text, .card.reco .reco-sections", linkRecoPlaceText);
+  </script>
 </body>
 </html>
