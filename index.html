@@ -97,7 +97,8 @@
     .day,
     .card,
     .check-section,
-    .tip-card {
+    .tip-card,
+    .phrase-card {
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
@@ -158,6 +159,60 @@
 
     .day {
       padding: 20px;
+      scroll-margin-top: 88px;
+    }
+
+    .itinerary-jump {
+      border-left: 4px solid var(--blue);
+      padding: 18px 20px;
+      margin: -4px 0 18px;
+    }
+
+    .itinerary-jump h3 {
+      font-size: 1.15rem;
+      margin-bottom: 12px;
+    }
+
+    .jump-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .jump-link {
+      display: block;
+      min-height: 82px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.025);
+      padding: 12px;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .jump-link:hover {
+      border-color: rgba(210, 179, 111, 0.55);
+      background: rgba(210, 179, 111, 0.08);
+    }
+
+    .jump-day {
+      color: var(--gold);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .jump-title {
+      margin-top: 5px;
+      line-height: 1.35;
+      font-weight: 750;
+    }
+
+    .jump-note {
+      color: var(--dim);
+      margin-top: 3px;
+      font-size: 0.82rem;
     }
 
     .day-head {
@@ -511,14 +566,16 @@
     li { margin: 4px 0; }
 
     .checklist-grid,
-    .tips-grid {
+    .tips-grid,
+    .phrase-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
     }
 
     .check-section,
-    .tip-card {
+    .tip-card,
+    .phrase-card {
       padding: 18px;
       background: var(--panel);
     }
@@ -563,6 +620,43 @@
       font-size: 0.93rem;
     }
 
+    .phrase-card {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .phrase-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(210, 179, 111, 0.45);
+      color: var(--gold);
+      font-size: 0.78rem;
+      font-weight: 750;
+    }
+
+    .phrase-fr {
+      color: var(--text);
+      font-weight: 750;
+      line-height: 1.35;
+    }
+
+    .phrase-cn {
+      color: var(--muted);
+      margin-top: 4px;
+      font-size: 0.92rem;
+    }
+
+    .phrase-say {
+      color: var(--dim);
+      margin-top: 3px;
+      font-size: 0.82rem;
+    }
+
     @media (max-width: 820px) {
       .page { width: min(100% - 20px, 1120px); padding-top: 10px; }
       .hero { min-height: 380px; }
@@ -572,6 +666,8 @@
       .checklist-grid,
       .tips-grid,
       .quick-grid,
+      .phrase-grid,
+      .jump-grid,
       .ops-grid {
         grid-template-columns: 1fr;
       }
@@ -606,6 +702,7 @@
       <button class="tab-button active" type="button" role="tab" aria-selected="true" aria-controls="panel-itinerary" data-tab="panel-itinerary">行程安排</button>
       <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-checklist" data-tab="panel-checklist">计划 Checklist</button>
       <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-tips" data-tab="panel-tips">预订与贴士</button>
+      <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-french" data-tab="panel-french">常用法语</button>
     </nav>
 
     <section class="tab-panel" id="panel-quick" role="tabpanel" hidden>
@@ -692,8 +789,59 @@
         <strong>行程亮点：</strong>图卢兹段留给 Les Carmes、Victor Hugo Market、Garonne 河边和 Jacobins 修道院钢琴音乐会；婚礼周末完整留在 Château de Goudourville；9/20 brunch 后回 Toulouse 缓冲；9/21 中午飞 Nice，尼斯三晚只抓 Nice 本城、Eze、Villefranche / Cap Ferrat，不排 Monaco。
       </div>
 
+      <div class="card itinerary-jump">
+        <h3>快速跳转到每天行程</h3>
+        <div class="jump-grid">
+          <a class="jump-link" href="#day-1">
+            <div class="jump-day">Day 1 · 9/16</div>
+            <div class="jump-title">抵达 Toulouse</div>
+            <div class="jump-note">Le Grand Balcon + Les Carmes</div>
+          </a>
+          <a class="jump-link" href="#day-2">
+            <div class="jump-day">Day 2 · 9/17</div>
+            <div class="jump-title">Victor Hugo + Piano</div>
+            <div class="jump-note">市场午餐、Garonne、Jacobins</div>
+          </a>
+          <a class="jump-link" href="#day-3">
+            <div class="jump-day">Day 3 · 9/18</div>
+            <div class="jump-title">Toulouse → Château</div>
+            <div class="jump-note">上午收尾，下午进城堡</div>
+          </a>
+          <a class="jump-link" href="#day-4">
+            <div class="jump-day">Day 4 · 9/19</div>
+            <div class="jump-title">Lynn & Guillaume 婚礼日</div>
+            <div class="jump-note">welcome、仪式、晚宴</div>
+          </a>
+          <a class="jump-link" href="#day-5">
+            <div class="jump-day">Day 5 · 9/20</div>
+            <div class="jump-title">婚礼 brunch → Toulouse</div>
+            <div class="jump-note">SOCLO 缓冲夜</div>
+          </a>
+          <a class="jump-link" href="#day-6">
+            <div class="jump-day">Day 6 · 9/21</div>
+            <div class="jump-title">飞 Nice + 老城黄昏</div>
+            <div class="jump-note">Hôtel Palais + Vieux Nice</div>
+          </a>
+          <a class="jump-link" href="#day-7">
+            <div class="jump-day">Day 7 · 9/22</div>
+            <div class="jump-title">Èze 山顶村</div>
+            <div class="jump-note">公交上山，下午回 Nice 放松</div>
+          </a>
+          <a class="jump-link" href="#day-8">
+            <div class="jump-day">Day 8 · 9/23</div>
+            <div class="jump-title">Villefranche + Cap Ferrat</div>
+            <div class="jump-note">早市、港湾、海岸步道</div>
+          </a>
+          <a class="jump-link" href="#day-9">
+            <div class="jump-day">Day 9 · 9/24</div>
+            <div class="jump-title">Nice → SFO</div>
+            <div class="jump-note">BA327 + BA287 回程</div>
+          </a>
+        </div>
+      </div>
+
       <div class="timeline">
-        <article class="day">
+        <article class="day" id="day-1">
           <div class="day-head">
             <div class="day-number">1</div>
             <div>
@@ -803,7 +951,7 @@
           </div>
         </article>
 
-        <article class="day">
+        <article class="day" id="day-2">
           <div class="day-head">
             <div class="day-number">2</div>
             <div>
@@ -944,7 +1092,7 @@
           </div>
         </article>
 
-        <article class="day">
+        <article class="day" id="day-3">
           <div class="day-head">
             <div class="day-number">3</div>
             <div>
@@ -1069,7 +1217,7 @@
           </div>
         </article>
 
-        <article class="day">
+        <article class="day" id="day-4">
           <div class="day-head">
             <div class="day-number">4</div>
             <div>
@@ -1160,7 +1308,7 @@
           </div>
         </article>
 
-        <article class="day">
+        <article class="day" id="day-5">
           <div class="day-head">
             <div class="day-number">5</div>
             <div>
@@ -1272,7 +1420,7 @@
           </div>
         </article>
 
-        <article class="day">
+        <article class="day" id="day-6">
           <div class="day-head">
             <div class="day-number">6</div>
             <div>
@@ -1394,7 +1542,7 @@
           </div>
         </article>
 
-        <article class="day">
+        <article class="day" id="day-7">
           <div class="day-head">
             <div class="day-number">7</div>
             <div>
@@ -1511,7 +1659,7 @@
           </div>
         </article>
 
-        <article class="day">
+        <article class="day" id="day-8">
           <div class="day-head">
             <div class="day-number">8</div>
             <div>
@@ -1658,7 +1806,7 @@
           </div>
         </article>
 
-        <article class="day">
+        <article class="day" id="day-9">
           <div class="day-head">
             <div class="day-number">9</div>
             <div>
@@ -1858,6 +2006,176 @@
         <div class="tip-card">
           <h3>不要硬塞</h3>
           <p>Carcassonne、A350 tour、Monaco、Cannes、Antibes 都不进主线。体力和本地氛围比多打几个点更值。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="panel-french" role="tabpanel" hidden>
+      <div class="section-header">
+        <h2>常用法语 20 句</h2>
+        <p>按旅行当天最常用的场景整理：打招呼、餐厅、交通、酒店和求助。</p>
+      </div>
+
+      <div class="phrase-grid">
+        <div class="phrase-card">
+          <div class="phrase-num">1</div>
+          <div>
+            <div class="phrase-fr">Bonjour.</div>
+            <div class="phrase-cn">你好 / 早上好 / 白天打招呼。</div>
+            <div class="phrase-say">bon-jour</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">2</div>
+          <div>
+            <div class="phrase-fr">Bonsoir.</div>
+            <div class="phrase-cn">晚上好。</div>
+            <div class="phrase-say">bon-swar</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">3</div>
+          <div>
+            <div class="phrase-fr">S'il vous plaît.</div>
+            <div class="phrase-cn">请。</div>
+            <div class="phrase-say">seel voo pleh</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">4</div>
+          <div>
+            <div class="phrase-fr">Merci beaucoup.</div>
+            <div class="phrase-cn">非常感谢。</div>
+            <div class="phrase-say">mehr-see bo-koo</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">5</div>
+          <div>
+            <div class="phrase-fr">Excusez-moi.</div>
+            <div class="phrase-cn">不好意思 / 借过 / 打扰一下。</div>
+            <div class="phrase-say">ex-koo-zay mwah</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">6</div>
+          <div>
+            <div class="phrase-fr">Parlez-vous anglais ?</div>
+            <div class="phrase-cn">您会说英语吗？</div>
+            <div class="phrase-say">par-lay voo ong-gleh</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">7</div>
+          <div>
+            <div class="phrase-fr">Je ne parle pas bien français.</div>
+            <div class="phrase-cn">我法语说得不好。</div>
+            <div class="phrase-say">zhuh nuh parl pah byan fron-seh</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">8</div>
+          <div>
+            <div class="phrase-fr">Pouvez-vous répéter plus lentement ?</div>
+            <div class="phrase-cn">您可以说慢一点 / 重复一遍吗？</div>
+            <div class="phrase-say">poo-vay voo ray-pay-tay ploo lont-mon</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">9</div>
+          <div>
+            <div class="phrase-fr">Nous avons une réservation au nom de Chen.</div>
+            <div class="phrase-cn">我们有预订，姓 Chen。</div>
+            <div class="phrase-say">noo za-von oon ray-zair-va-syon oh nom duh Chen</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">10</div>
+          <div>
+            <div class="phrase-fr">Une table pour deux, s'il vous plaît.</div>
+            <div class="phrase-cn">两个人一张桌子，谢谢。</div>
+            <div class="phrase-say">oon tabl poor duh</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">11</div>
+          <div>
+            <div class="phrase-fr">Est-ce que vous avez une terrasse ?</div>
+            <div class="phrase-cn">有露台位吗？</div>
+            <div class="phrase-say">ess-kuh voo za-vay oon teh-ras</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">12</div>
+          <div>
+            <div class="phrase-fr">Qu'est-ce que vous recommandez ?</div>
+            <div class="phrase-cn">您推荐什么？</div>
+            <div class="phrase-say">kess-kuh voo ruh-ko-mon-day</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">13</div>
+          <div>
+            <div class="phrase-fr">L'addition, s'il vous plaît.</div>
+            <div class="phrase-cn">买单，谢谢。</div>
+            <div class="phrase-say">la-dee-syon seel voo pleh</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">14</div>
+          <div>
+            <div class="phrase-fr">Où sont les toilettes ?</div>
+            <div class="phrase-cn">洗手间在哪里？</div>
+            <div class="phrase-say">oo son lay twa-let</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">15</div>
+          <div>
+            <div class="phrase-fr">Pouvez-vous appeler un taxi ?</div>
+            <div class="phrase-cn">可以帮我们叫出租车吗？</div>
+            <div class="phrase-say">poo-vay voo za-play un tak-see</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">16</div>
+          <div>
+            <div class="phrase-fr">Nous allons à la gare.</div>
+            <div class="phrase-cn">我们要去火车站。</div>
+            <div class="phrase-say">noo za-lon ah la gar</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">17</div>
+          <div>
+            <div class="phrase-fr">Nous allons à l'aéroport.</div>
+            <div class="phrase-cn">我们要去机场。</div>
+            <div class="phrase-say">noo za-lon ah leh-ro-por</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">18</div>
+          <div>
+            <div class="phrase-fr">Combien ça coûte ?</div>
+            <div class="phrase-cn">多少钱？</div>
+            <div class="phrase-say">kom-byen sa koot</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">19</div>
+          <div>
+            <div class="phrase-fr">À quelle heure part le train ?</div>
+            <div class="phrase-cn">火车几点出发？</div>
+            <div class="phrase-say">ah kel uhr par luh tran</div>
+          </div>
+        </div>
+        <div class="phrase-card">
+          <div class="phrase-num">20</div>
+          <div>
+            <div class="phrase-fr">Pouvez-vous nous aider, s'il vous plaît ?</div>
+            <div class="phrase-cn">可以帮我们一下吗？</div>
+            <div class="phrase-say">poo-vay voo noo zay-day seel voo pleh</div>
+          </div>
         </div>
       </div>
     </section>
