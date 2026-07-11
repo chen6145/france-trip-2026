@@ -485,6 +485,68 @@ function drawMesh(mesh,tex,model,emissive,tint,flash){
   gl.uniform4f(U.uTint,t[0],t[1],t[2],flash||0);
   gl.drawElements(gl.TRIANGLES,mesh.n,gl.UNSIGNED_SHORT,0);
 }
+// ---------- 有机放样建模（丧尸形体的关键） ----------
+function hashN(x,y){ const v=Math.sin(x*127.1+y*311.7)*43758.5453; return v-Math.floor(v); }
+function vnoise(x,y){
+  const xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi;
+  const u=xf*xf*(3-2*xf), v=yf*yf*(3-2*yf);
+  return lerp(lerp(hashN(xi,yi),hashN(xi+1,yi),u), lerp(hashN(xi,yi+1),hashN(xi+1,yi+1),u), v);
+}
+// profile: 自上而下的截面 [{y, r, sx?, zc?}]，seg 圆周段数
+// opts: {amp 噪声鼓包幅度, seed, cap 顶部封口}
+function loftGeo(prof,seg,o){
+  o=o||{};
+  const rows=prof.length, P=[];
+  const g3={pos:[],norm:[],uv:[],idx:[]};
+  for (let j=0;j<rows;j++){
+    const pr=prof[j];
+    for (let i=0;i<=seg;i++){
+      const a=-Math.PI+i/seg*TAU;
+      let r=pr.r;
+      if (o.amp){
+        const n=vnoise(Math.sin(a)*2.3+(o.seed||0)*7, Math.cos(a)*2.3+j*1.31+(o.seed||0)*13);
+        r*=1+o.amp*(n-0.5)*2;
+      }
+      P.push([Math.sin(a)*r*(pr.sx||1), pr.y, Math.cos(a)*r+(pr.zc||0)]);
+      g3.uv.push(i/seg, j/(rows-1));
+    }
+  }
+  for (const p of P) g3.pos.push(p[0],p[1],p[2]);
+  const at=(j,i)=>P[clamp(j,0,rows-1)*(seg+1)+(((i%seg)+seg)%seg)];
+  for (let j=0;j<rows;j++) for (let i=0;i<=seg;i++){
+    const a=at(j,i+1), b=at(j,i-1), c=at(j+1,i), d=at(j-1,i);
+    const du=[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+    const dv=[c[0]-d[0],c[1]-d[1],c[2]-d[2]];
+    let nx=du[1]*dv[2]-du[2]*dv[1], ny=du[2]*dv[0]-du[0]*dv[2], nz=du[0]*dv[1]-du[1]*dv[0];
+    const p=at(j,i), rx2=p[0], rz2=p[2]-(prof[j].zc||0);
+    if (nx*rx2+nz*rz2<0){ nx=-nx; ny=-ny; nz=-nz; }
+    const l=Math.hypot(nx,ny,nz)||1;
+    g3.norm.push(nx/l,ny/l,nz/l);
+  }
+  for (let j=0;j<rows-1;j++) for (let i=0;i<seg;i++){
+    const a=j*(seg+1)+i, b=a+seg+1;
+    g3.idx.push(a,b,a+1, a+1,b,b+1);
+  }
+  if (o.cap){
+    const cV=g3.pos.length/3;
+    g3.pos.push(0,prof[0].y+0.005,(prof[0].zc||0));
+    g3.norm.push(0,1,0); g3.uv.push(0.5,0);
+    for (let i=0;i<seg;i++) g3.idx.push(cV,i,i+1);
+  }
+  return g3;
+}
+// 合并多个几何体（爪指等小件）
+function mergeGeo(list){
+  const g3={pos:[],norm:[],uv:[],idx:[]};
+  for (const [g,dx,dy,dz] of list){
+    const base=g3.pos.length/3;
+    for (let i=0;i<g.pos.length;i+=3) g3.pos.push(g.pos[i]+dx,g.pos[i+1]+dy,g.pos[i+2]+dz);
+    g3.norm.push(...g.norm); g3.uv.push(...g.uv);
+    for (const ix of g.idx) g3.idx.push(ix+base);
+  }
+  return g3;
+}
+
 // 世界坐标 → UI 画布坐标
 function project(wx,wy,wz){
   const v=xf4(VIEW,wx,wy,wz,1);
@@ -503,27 +565,26 @@ const SKINS = {
 };
 const TEX = {};
 
-// —— 脸部贴图（盒装头 +z 面）——
-// 布局：左 160px 脸，右侧 96px 后脑/头皮
+// —— 脸部贴图（环绕式：u=0.5 在面部正前，接缝藏在后脑）——
 function faceTexture(p,o){
   o=o||{};
   const c=newCanvas(256,256), g=c.getContext('2d');
-  // 底：整张皮肤
   g.fillStyle=vGrad(g,0,0,0,256,[[0,p.hi],[0.55,p.mid],[1,p.lo]]);
   g.fillRect(0,0,256,256);
   mottle(g,0,0,256,256,120,[p.lo,p.decay,'#4c4232'],3,10,0.07,0.2);
-  // 后脑（右侧区）：残发
+  // 顶部头皮 + 两侧/后脑残发（x<64 与 x>192 环绕到脑后）
   g.strokeStyle='rgba(14,11,8,0.8)'; g.lineWidth=3;
-  for (let i=0;i<26;i++){
-    const hx=166+Math.random()*86;
-    if (o.civ || Math.random()<0.75){
-      g.beginPath(); g.moveTo(hx,rand(6,30));
-      g.quadraticCurveTo(hx+rand(-8,8),110,hx+rand(-14,14),rand(150,240));
+  for (let i=0;i<34;i++){
+    const hx=(Math.random()<0.5)?Math.random()*70:186+Math.random()*70;
+    if (o.civ || Math.random()<0.8){
+      g.beginPath(); g.moveTo(hx,rand(4,26));
+      g.quadraticCurveTo(hx+rand(-8,8),110,hx+rand(-14,14),rand(150,246));
       g.stroke();
     }
   }
-  // —— 脸（左 160 区，中心 80,128）——
-  const cx=80, cy=128, S=2.6;
+  g.fillStyle='rgba(14,11,8,0.55)';
+  g.fillRect(0,0,256,o.civ?34:16);
+  const cx=128, cy=128, S=2.6;
   if (o.civ){
     g.fillStyle='#3a2c1e';
     g.beginPath(); g.ellipse(cx,cy-26*S*0.4,60,34,0,Math.PI,0); g.fill();
@@ -672,38 +733,36 @@ function faceTexture(p,o){
     g.stroke();
   }
   if (o.hood){
-    // 兜帽：只露下半张脸
+    // 兜帽整圈罩住上半，正面开口只露下半张脸
     g.fillStyle=vGrad(g,0,0,0,256,[[0,'#3c3446'],[1,'#17131e']]);
-    g.fillRect(160,0,96,256);
     g.beginPath();
-    g.moveTo(0,256); g.lineTo(0,60);
-    g.quadraticCurveTo(cx,0,160,60); g.lineTo(160,256);
-    g.lineTo(cx+42,256); g.quadraticCurveTo(cx+34,158,cx+40,120);
-    g.quadraticCurveTo(cx,96,cx-40,120);
-    g.quadraticCurveTo(cx-34,158,cx-42,256);
-    g.closePath(); g.fill();
-    g.fillStyle='rgba(2,1,3,0.9)';
-    g.beginPath(); g.ellipse(cx,cy-14,34,22,0,0,TAU); g.fill();
+    g.rect(0,0,256,170);
+    g.ellipse(cx,cy+8,42,50,0,0,TAU);
+    g.fill('evenodd');
+    // 开口上缘的深渊阴影
+    g.fillStyle='rgba(2,1,3,0.88)';
+    g.beginPath(); g.ellipse(cx,cy-16,38,28,0,0,TAU); g.fill();
     g.strokeStyle='rgba(8,5,12,0.7)'; g.lineWidth=3;
-    g.beginPath(); g.moveTo(cx-30,50); g.quadraticCurveTo(cx-36,100,cx-38,150); g.stroke();
-    g.beginPath(); g.moveTo(cx+30,50); g.quadraticCurveTo(cx+36,100,cx+38,150); g.stroke();
+    for (const fx of [30,70,186,226]){
+      g.beginPath(); g.moveTo(fx,10); g.quadraticCurveTo(fx+rand(-6,6),90,fx+rand(-10,10),160); g.stroke();
+    }
   }
   grunge(g,256,256,0.12);
   return texFromCanvas(c,false);
 }
 
-// —— 躯干贴图：左半=正面（肋骨/伤口/腰带），右半=背面 ——
+// —— 躯干贴图（环绕式：胸口在 u=0.5，脊柱藏在接缝） ——
 function torsoTexture(p,o){
   o=o||{};
   const c=newCanvas(256,256), g=c.getContext('2d');
   g.fillStyle=vGrad(g,0,0,0,256,[[0,p.hi],[0.5,p.mid],[1,p.lo]]);
   g.fillRect(0,0,256,256);
   mottle(g,0,0,256,256,140,[p.lo,p.decay,'#4c4232'],3,10,0.07,0.18);
-  const cx=64;
+  const cx=128;
   // 正面：锁骨
   g.strokeStyle=p.hi; g.lineWidth=3; g.globalAlpha=0.85;
-  g.beginPath(); g.moveTo(cx-52,26); g.quadraticCurveTo(cx-8,34,cx-2,28); g.stroke();
-  g.beginPath(); g.moveTo(cx+52,24); g.quadraticCurveTo(cx+8,32,cx+2,28); g.stroke();
+  g.beginPath(); g.moveTo(cx-58,26); g.quadraticCurveTo(cx-8,34,cx-2,28); g.stroke();
+  g.beginPath(); g.moveTo(cx+58,24); g.quadraticCurveTo(cx+8,32,cx+2,28); g.stroke();
   g.globalAlpha=1;
   // 肋骨
   g.globalAlpha=0.65;
@@ -728,42 +787,39 @@ function torsoTexture(p,o){
   g.fillStyle='#200404';
   g.beginPath(); g.ellipse(cx+40,66,9,5,0.4,0,TAU); g.fill();
   if (o.shirt){
-    // 破烂衬衫盖上半
+    // 破烂衬衫整圈覆盖上半
     g.fillStyle=vGrad(g,0,0,0,140,[[0,o.shirt.hi],[1,o.shirt.lo]]);
     g.beginPath();
-    g.moveTo(0,0); g.lineTo(128,0); g.lineTo(128,70);
-    let tx=128;
-    for (let i=0;i<6;i++){ tx-=21; g.lineTo(tx+6,70+((i%2)?34:8)+rand(0,14)); }
-    g.lineTo(0,84); g.closePath(); g.fill();
+    g.moveTo(0,0); g.lineTo(256,0); g.lineTo(256,74);
+    let tx=256;
+    for (let i=0;i<12;i++){ tx-=21; g.lineTo(tx+6,72+((i%2)?32:8)+rand(0,14)); }
+    g.lineTo(0,82); g.closePath(); g.fill();
     g.strokeStyle='rgba(0,0,0,0.4)'; g.lineWidth=2;
-    for (let i=0;i<5;i++){
-      g.beginPath(); g.moveTo(12+i*24,6); g.lineTo(8+i*24,64+rand(0,18)); g.stroke();
+    for (let i=0;i<10;i++){
+      g.beginPath(); g.moveTo(12+i*24,6); g.lineTo(8+i*24,62+rand(0,18)); g.stroke();
     }
-    mottle(g,0,0,128,80,20,['#2a0606','#14141c'],4,12,0.2,0.4);
+    mottle(g,0,0,256,84,34,['#2a0606','#14141c'],4,12,0.2,0.4);
   }
-  // 背面（右半）：脊柱 + 抓痕
+  // 背部：脊柱在接缝两侧 + 抓痕
   g.globalAlpha=0.6; g.strokeStyle=p.lo; g.lineWidth=4;
-  g.beginPath(); g.moveTo(192,20); g.lineTo(192,200); g.stroke();
-  for (let i=0;i<7;i++){
-    g.beginPath(); g.moveTo(180,36+i*24); g.lineTo(204,36+i*24); g.stroke();
+  for (const sxx of [6,250]){
+    g.beginPath(); g.moveTo(sxx,20); g.lineTo(sxx,200); g.stroke();
+    for (let i=0;i<7;i++){
+      g.beginPath(); g.moveTo(sxx-10,36+i*24); g.lineTo(sxx+10,36+i*24); g.stroke();
+    }
   }
   g.globalAlpha=1;
   g.strokeStyle='#3a0a08'; g.lineWidth=3.4; g.globalAlpha=0.8;
   for (let i=0;i<3;i++){
-    g.beginPath(); g.moveTo(150+i*10,60); g.quadraticCurveTo(158+i*10,120,150+i*10,180); g.stroke();
+    g.beginPath(); g.moveTo(206+i*10,60); g.quadraticCurveTo(214+i*10,120,206+i*10,180); g.stroke();
   }
   g.globalAlpha=1;
-  if (o.shirt){
-    g.fillStyle=vGrad(g,0,0,0,150,[[0,o.shirt.hi],[1,o.shirt.lo]]);
-    g.fillRect(129,0,127,90);
-    mottle(g,129,0,127,90,14,['#2a0606','#14141c'],4,12,0.2,0.4);
-  }
   // 腰带 + 牛仔裤腰（贴图底部，两半都有）
   g.fillStyle=vGrad(g,0,196,0,256,[[0,'#4d5665'],[1,'#222834']]);
   g.fillRect(0,200,256,56);
   g.fillStyle='#1c1409'; g.fillRect(0,200,256,18);
-  g.fillStyle='#8e7a4e'; g.fillRect(cx-11,201,22,15);
-  g.fillStyle='#5c4c26'; g.fillRect(cx-5,205,10,7);
+  g.fillStyle='#8e7a4e'; g.fillRect(117,201,22,15);
+  g.fillStyle='#5c4c26'; g.fillRect(123,205,10,7);
   g.fillStyle='#1c1409';
   for (const lx of [18,100,150,236]) g.fillRect(lx,198,10,22);
   grunge(g,256,256,0.12);
@@ -825,17 +881,17 @@ function buildAllTextures(){
     g.fillStyle=vGrad(g,0,0,0,256,[[0,p.hi],[0.5,p.mid],[1,p.lo]]);
     g.fillRect(0,0,256,256);
     mottle(g,0,0,256,256,120,[p.lo,'#4a5440','#42342a'],4,12,0.08,0.2);
-    // 左半正面：心脏坑
-    const pit=g.createRadialGradient(64,100,6,64,100,66);
+    // 中央正面：心脏坑
+    const pit=g.createRadialGradient(128,100,6,128,100,66);
     pit.addColorStop(0,'#060101'); pit.addColorStop(0.7,'#140605'); pit.addColorStop(1,'rgba(20,6,5,0)');
     g.fillStyle=pit;
-    g.beginPath(); g.ellipse(64,100,58,66,0,0,TAU); g.fill();
+    g.beginPath(); g.ellipse(128,100,58,66,0,0,TAU); g.fill();
     g.strokeStyle='#3a0c0a'; g.lineWidth=4; g.globalAlpha=0.7;
     for (let i=0;i<8;i++){
       const a=i/8*TAU+0.3;
       g.beginPath();
-      g.moveTo(64+Math.cos(a)*52,100+Math.sin(a)*60);
-      g.quadraticCurveTo(64+Math.cos(a+0.25)*76,100+Math.sin(a+0.25)*84,64+Math.cos(a+0.1)*95,100+Math.sin(a+0.1)*100);
+      g.moveTo(128+Math.cos(a)*52,100+Math.sin(a)*60);
+      g.quadraticCurveTo(128+Math.cos(a+0.25)*76,100+Math.sin(a+0.25)*84,128+Math.cos(a+0.1)*95,100+Math.sin(a+0.1)*100);
       g.stroke();
     }
     g.globalAlpha=1;
@@ -845,16 +901,16 @@ function buildAllTextures(){
       g.beginPath(); g.moveTo(14+i*24,16+((i%2)?8:0)); g.lineTo(30+i*24,28+((i%2)?8:0)); g.stroke();
     }
     // 皮革绑带
-    g.save(); g.translate(64,180); g.rotate(0.4);
+    g.save(); g.translate(128,180); g.rotate(0.4);
     g.fillStyle='rgba(22,15,8,0.7)'; g.fillRect(-100,-10,200,20);
     g.restore();
-    // 背面（右半）：脊柱缝合
+    // 背部：脊柱缝合（接缝两侧）
     g.strokeStyle=p.lo; g.lineWidth=6; g.globalAlpha=0.6;
-    g.beginPath(); g.moveTo(192,20); g.lineTo(192,230); g.stroke();
+    for (const sxx of [6,250]){ g.beginPath(); g.moveTo(sxx,20); g.lineTo(sxx,230); g.stroke(); }
     g.globalAlpha=1;
     g.strokeStyle='#4c4634'; g.lineWidth=3;
     for (let i=0;i<8;i++){
-      g.beginPath(); g.moveTo(178,32+i*26); g.lineTo(206,36+i*26); g.stroke();
+      g.beginPath(); g.moveTo(240,32+i*26); g.lineTo(256,36+i*26); g.stroke();
     }
     grunge(g,256,256,0.14);
     return texFromCanvas(c,false);
@@ -1059,23 +1115,70 @@ function buildAllTextures(){
 }
 buildAllTextures();
 
-// ---------- 人物网格 ----------
+// ---------- 人物网格（有机放样） ----------
+function buildBodyMeshes(type,seed){
+  const th = type==='brute'?1.3: type==='runner'?0.86: type==='civ'?0.96:1.0;
+  const amp = type==='civ'?0.015: type==='brute'?0.085: type==='runner'?0.05:0.07;
+  const torsoProf=[
+    {y:0.64,r:0.055*th,sx:1.25},
+    {y:0.58,r:0.125*th,sx:1.75,zc:-0.012},
+    {y:0.49,r:0.145*th,sx:1.5,zc:0.012},
+    {y:0.38,r:0.138*th,sx:1.45},
+    {y:0.25,r:0.108*th,sx:1.4},
+    {y:0.12,r:0.125*th,sx:1.38},
+    {y:0.0,r:0.135*th,sx:1.42},
+    {y:-0.09,r:0.085*th,sx:1.25},
+  ];
+  const headProf=[
+    {y:0.165,r:0.055,sx:0.95},
+    {y:0.12,r:0.125,sx:0.92},
+    {y:0.04,r:0.14,sx:0.9,zc:0.012},
+    {y:-0.04,r:0.124,sx:0.88,zc:0.02},
+    {y:-0.11,r:0.096,sx:0.82,zc:0.026},
+    {y:-0.155,r:0.045,sx:0.75,zc:0.03},
+  ];
+  const limb=(r1,r2,r3,len,a,sd)=>finalizeMesh(loftGeo([
+    {y:0,r:r1},{y:-len*0.42,r:r2},{y:-len*0.62,r:r2*0.86},{y:-len,r:r3}
+  ],7,{amp:a,seed:sd}));
+  return {
+    torso: finalizeMesh(loftGeo(torsoProf,10,{amp,seed})),
+    head:  finalizeMesh(loftGeo(headProf,10,{amp:amp*0.7,seed:seed+5,cap:1})),
+    uarm:  limb(0.057*th,0.062*th,0.042*th,0.30,amp,seed+1),
+    farm:  limb(0.047*th,0.052*th,0.033*th,0.27,amp,seed+2),
+    thigh: limb(0.09*th,0.08*th,0.062*th,0.42,amp*0.6,seed+3),
+    shin:  limb(0.066*th,0.062*th,0.046*th,0.40,amp*0.6,seed+4),
+  };
+}
+const BODIES={};
+{ let bs=1;
+  for (const k of ['shambler','runner','brute','thrower','civ']){ BODIES[k]=buildBodyMeshes(k,bs*3.7); bs++; }
+}
 const RIG = {
-  head:  finalizeMesh(boxGeo(0.28,0.32,0.28, HEAD_UV)),
-  torso: finalizeMesh(boxGeo(0.46,0.62,0.26, TORSO_UV)),
-  torsoBig: finalizeMesh(boxGeo(0.64,0.68,0.36, TORSO_UV)),
-  uarm:  finalizeMesh(cylGeo(0.056,0.048,0.30,7)),
-  farm:  finalizeMesh(cylGeo(0.048,0.04,0.26,7)),
-  hand:  finalizeMesh(boxGeo(0.09,0.13,0.05)),
-  thigh: finalizeMesh(cylGeo(0.08,0.065,0.42,7)),
-  shin:  finalizeMesh(cylGeo(0.06,0.05,0.40,7)),
+  ball:  finalizeMesh(sphereGeo(0.06,5,7)),
+  neck:  finalizeMesh(cylGeo(0.05,0.055,0.16,7)),
   foot:  finalizeMesh(boxGeo(0.11,0.07,0.24)),
-  // Boss
-  bTorso: finalizeMesh(boxGeo(0.98,1.15,0.52, TORSO_UV)),
-  bHood:  finalizeMesh(cylGeo(0.13,0.27,0.56,8)),
-  bArm:   finalizeMesh(cylGeo(0.12,0.1,0.62,8)),
-  bFarm:  finalizeMesh(cylGeo(0.1,0.085,0.55,8)),
-  bLeg:   finalizeMesh(cylGeo(0.15,0.12,0.95,8)),
+  claws: finalizeMesh(mergeGeo([
+    [boxGeo(0.075,0.1,0.045),0,-0.03,0],
+    [boxGeo(0.02,0.1,0.018),-0.028,-0.12,0.008],
+    [boxGeo(0.02,0.11,0.018),0,-0.125,0.012],
+    [boxGeo(0.02,0.09,0.018),0.028,-0.115,0.008],
+  ])),
+  // Boss（放样体格）
+  bTorso: finalizeMesh(loftGeo([
+    {y:1.3,r:0.16,sx:1.3},
+    {y:1.18,r:0.42,sx:1.5,zc:-0.02},
+    {y:1.0,r:0.44,sx:1.42,zc:0.03},
+    {y:0.75,r:0.40,sx:1.35},
+    {y:0.45,r:0.32,sx:1.3},
+    {y:0.2,r:0.34,sx:1.32},
+    {y:0,r:0.30,sx:1.25},
+  ],12,{amp:0.07,seed:9})),
+  bHood: finalizeMesh(loftGeo([
+    {y:0.46,r:0.03},{y:0.34,r:0.14},{y:0.16,r:0.22},{y:-0.05,r:0.26},{y:-0.2,r:0.28},
+  ],10,{amp:0.1,seed:4,cap:1})),
+  bArm:  finalizeMesh(loftGeo([{y:0,r:0.13},{y:-0.3,r:0.14},{y:-0.62,r:0.095}],8,{amp:0.08,seed:6})),
+  bFarm: finalizeMesh(loftGeo([{y:0,r:0.10},{y:-0.26,r:0.11},{y:-0.55,r:0.075}],8,{amp:0.08,seed:7})),
+  bLeg:  finalizeMesh(loftGeo([{y:0,r:0.16},{y:-0.5,r:0.14},{y:-0.95,r:0.11}],8,{amp:0.05,seed:8})),
   blade:  finalizeMesh(boxGeo(0.4,0.74,0.06)),
   handle: finalizeMesh(cylGeo(0.035,0.035,0.55,6)),
   ribBar: finalizeMesh(boxGeo(0.05,0.56,0.05)),
@@ -1676,52 +1779,64 @@ function updateBoss(dt){
 // ---------- 3D 实体绘制 ----------
 function drawZombie3D(z,t){
   const S=z.tp.size;
-  const wz = z.civ? -5.5 : toWZ(z.z);
-  const wx = z.civ? z.wx : lerp(z.wx0,z.wxT,z.z);
   const dyingP = z.state==='dying'? Math.min(1,z.t/0.8):0;
+  const windup=z.state==='windup';
+  const lunge = windup? Math.pow(Math.min(1,z.t/0.7),3)*0.42 : 0;
+  const wz = (z.civ? -5.5 : toWZ(z.z)) + lunge;
+  const wx = z.civ? z.wx : lerp(z.wx0,z.wxT,z.z);
   const s0=Math.sin(z.phase);
   const lurch=Math.sign(s0)*Math.pow(Math.abs(s0),0.55);
   const swing=z.civ?Math.sin(z.phase)*0.5:lurch*0.45;
   const tremor=z.type==='runner'?Math.sin(t*47+z.gaitSeed)*0.03:0;
   const twitchK=z.twitch>0?Math.sin(t*72+z.gaitSeed)*z.twitch:0;
-  const windup=z.state==='windup';
   const bob=Math.abs(Math.cos(z.phase))*0.045;
   let root=mul(tr(wx,bob,wz), ry((z.faceJit||0)+Math.sin(z.phase)*0.05));
   if (dyingP>0) root=mul(root, rx(-dyingP*1.52));
   root=mul(root, sc(S,S,S));
   const flash=z.flash>0?0.5:0;
   const ZT=[0.72,0.73,0.78];
+  const B=BODIES[z.type];
   const skin=TEX[z.type+'_skin'];
   const pants= z.type==='brute'?TEX.darkpants: (z.civ?TEX.civpants:TEX.jeans);
-  // 腿
+  // 腿（膝关节球衔接）
   for (const side of [-1,1]){
     const sw = side<0? swing : -swing;
     const hip=mul(root,mul(tr(side*0.1,0.95,0),rx(sw)));
-    drawMesh(RIG.thigh,pants,hip,0,ZT,flash);
-    const knee=mul(hip,mul(tr(0,-0.42,0),rx(clamp(-sw,0,1)*0.7)));
-    drawMesh(RIG.shin,pants,knee,0,ZT,flash);
+    drawMesh(B.thigh,pants,hip,0,ZT,flash);
+    const kneeM=mul(hip,tr(0,-0.42,0));
+    drawMesh(RIG.ball,pants,mul(kneeM,sc(1.15,1.15,1.15)),0,ZT,flash);
+    const knee=mul(kneeM,rx(clamp(-sw,0,1)*0.7));
+    drawMesh(B.shin,pants,knee,0,ZT,flash);
     drawMesh(RIG.foot,skin,mul(knee,tr(0,-0.40,0.06)),0,ZT,flash);
   }
-  // 上身佝偻铰链
-  const hinge=mul(root,mul(tr(0,0.95,0),rx(z.civ?0:(z.hunch+tremor+twitchK*0.3))));
-  drawMesh(z.type==='brute'?RIG.torsoBig:RIG.torso, TEX[z.type+'_torso'], mul(hinge,tr(0,0.30,0)),0,ZT,flash);
-  // 手臂
+  // 上身：佝偻 + 迈步反向扭转
+  const hinge=mul(root,mul(tr(0,0.95,0),
+    mul(ry(z.civ?0:Math.sin(z.phase)*0.09),
+        rx(z.civ?0:(z.hunch+tremor+twitchK*0.3)))));
+  drawMesh(B.torso, TEX[z.type+'_torso'], mul(hinge,tr(0,-0.07,0)),0,ZT,flash);
+  drawMesh(RIG.neck, skin, mul(hinge,tr(0,0.66,0)),0,ZT,flash);
+  // 手臂（左右不对称伸出 + 肩肘关节球）
   let fwd, elb, spread;
   if (z.civ){ fwd=-2.9+Math.sin(t*10)*0.25; elb=-0.2; spread=0.4; }
   else if (windup){ const r2=Math.min(1,z.t/0.5); fwd=-1.2-r2*1.1; elb=-0.3; spread=0.5+r2*0.2; }
   else { fwd=-1.15+Math.sin(z.phase*2)*0.15; elb=-0.55; spread=0.22; }
   for (const side of [-1,1]){
-    const shx=(z.type==='brute')?0.36:0.26;
-    const sh=mul(hinge,mul(tr(side*shx,0.52,0),mul(rz(side*spread),rx(fwd+side*0.06))));
-    drawMesh(RIG.uarm,skin,sh,0,ZT,flash);
-    const el=mul(sh,mul(tr(0,-0.30,0),rx(elb)));
-    drawMesh(RIG.farm,skin,el,0,ZT,flash);
-    drawMesh(RIG.hand,skin,mul(el,tr(0,-0.28,0)),0,ZT,flash);
+    const shx=(z.type==='brute')?0.32:0.235;
+    const armVar = z.civ?0 : side*((z.faceJit||0)*2+0.12);
+    const shM=mul(hinge,tr(side*shx,0.53,0));
+    drawMesh(RIG.ball,skin,mul(shM,sc(1.3,1.3,1.3)),0,ZT,flash);
+    const sh=mul(shM,mul(rz(side*spread),rx(fwd+armVar)));
+    drawMesh(B.uarm,skin,sh,0,ZT,flash);
+    const elM=mul(sh,tr(0,-0.30,0));
+    drawMesh(RIG.ball,skin,mul(elM,sc(0.9,0.9,0.9)),0,ZT,flash);
+    const el=mul(elM,rx(elb));
+    drawMesh(B.farm,skin,el,0,ZT,flash);
+    drawMesh(RIG.claws,skin,mul(el,tr(0,-0.26,0.01)),0,ZT,flash);
   }
   // 头
   if (!(z.state==='dying'&&z.headshot)){
-    const hm=mul(hinge,mul(tr(0,0.76,0),rz(z.headTilt+twitchK*0.6)));
-    drawMesh(RIG.head,z.texF,hm,0,ZT,flash);
+    const hm=mul(hinge,mul(tr(0,0.78,0),rz(z.headTilt+twitchK*0.6)));
+    drawMesh(B.head,z.texF,hm,0,ZT,flash);
     z.headW=xf4(hm,0,0,0,1);
   } else {
     z.headW=xf4(hinge,0,0.62,0,1);
@@ -1747,22 +1862,23 @@ function drawZombie3D(z,t){
 function drawCorpse(c){
   const S=TYPES[c.type].size;
   const root=mul(tr(c.wx,0.16*S,c.wz),mul(ry(c.rot),mul(rx(-1.52),sc(S,S,S))));
+  const B=BODIES[c.type];
   const skin=TEX[c.type+'_skin'];
   const pants= c.type==='brute'?TEX.darkpants:TEX.jeans;
   const CT=[0.42,0.42,0.48];
   const a1=Math.sin(c.seed)*0.5, a2=Math.cos(c.seed)*0.5;
   for (const side of [-1,1]){
     const hip=mul(root,mul(tr(side*0.1,0.95,0),rx(side<0?a1:-a1*0.6)));
-    drawMesh(RIG.thigh,pants,hip,0,CT);
-    drawMesh(RIG.shin,pants,mul(hip,tr(0,-0.42,0)),0,CT);
+    drawMesh(B.thigh,pants,hip,0,CT);
+    drawMesh(B.shin,pants,mul(hip,tr(0,-0.42,0)),0,CT);
   }
-  drawMesh(c.type==='brute'?RIG.torsoBig:RIG.torso, TEX[c.type+'_torso'], mul(root,tr(0,1.25,0)),0,CT);
+  drawMesh(B.torso, TEX[c.type+'_torso'], mul(root,tr(0,0.88,0)),0,CT);
   for (const side of [-1,1]){
-    const sh=mul(root,mul(tr(side*0.26,1.47,0),mul(rz(side*(0.9+a2)),rx(-0.3))));
-    drawMesh(RIG.uarm,skin,sh,0,CT);
-    drawMesh(RIG.farm,skin,mul(sh,tr(0,-0.30,0)),0,CT);
+    const sh=mul(root,mul(tr(side*0.235,1.48,0),mul(rz(side*(0.9+a2)),rx(-0.3))));
+    drawMesh(B.uarm,skin,sh,0,CT);
+    drawMesh(B.farm,skin,mul(sh,tr(0,-0.30,0)),0,CT);
   }
-  if (!c.headshot) drawMesh(RIG.head,c.texF,mul(root,mul(tr(0,1.71,0),rz(a1))),0,CT);
+  if (!c.headshot) drawMesh(B.head,c.texF,mul(root,mul(tr(0,1.73,0),rz(a1))),0,CT);
 }
 
 function drawHatchet3D(h){
@@ -1799,15 +1915,15 @@ function drawBoss3D(t){
     const hip=mul(root,mul(tr(side*0.24,0.95,0),rx(0)));
     drawMesh(RIG.bLeg,TEX.boss_metal,hip,0,null,flash);
   }
-  // 躯干（胸口开洞贴图）
-  drawMesh(RIG.bTorso,TEX.boss_chest,mul(root,tr(0,1.6,0)),0,null,flash);
+  // 躯干（放样体格，胸口开洞贴图）
+  drawMesh(RIG.bTorso,TEX.boss_chest,mul(root,tr(0,0.88,0)),0,null,flash);
   // 心脏 + 肋骨栅栏
   const hb=1+0.16*Math.sin(t*(b.vulnerable?9:5));
-  const heartM=mul(root,mul(tr(0,1.78,0.32),sc(hb,hb,hb)));
+  const heartM=mul(root,mul(tr(0,1.8,0.44),sc(hb,hb,hb)));
   drawMesh(RIG.heart,TEX.white,heartM, b.vulnerable?0.85:0.25, b.vulnerable?[0.95,0.13,0.1]:[0.4,0.08,0.07]);
   b.heartW=xf4(heartM,0,0,0,1);
   for (const rx2 of [-0.14,0,0.14])
-    drawMesh(RIG.ribBar,TEX.white,mul(root,tr(rx2,1.78,0.42)),0.12,[0.62,0.56,0.44],flash);
+    drawMesh(RIG.ribBar,TEX.white,mul(root,tr(rx2,1.8,0.54)),0.12,[0.62,0.56,0.44],flash);
   // 左臂
   {
     const sh=mul(root,mul(tr(-0.55,2.05,0),mul(rz(-0.25),rx(-0.15+Math.sin(t*1.7)*0.05))));
@@ -1826,19 +1942,19 @@ function drawBoss3D(t){
     drawMesh(RIG.blade,TEX.cleaver,mul(grip,tr(0.06,-0.52,0)),0,null,flash);
   }
   // 行刑者风帽头
-  const hm=mul(root,mul(tr(0,2.85,0),rz(Math.sin(t*1.3)*0.04)));
+  const hm=mul(root,mul(tr(0,2.62,0),rz(Math.sin(t*1.3)*0.04)));
   drawMesh(RIG.bHood,TEX.hood,hm,0,null,flash);
   // 眼缝红光
   const eg=0.5+0.5*Math.sin(t*6.5);
   gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA,gl.ONE); gl.depthMask(false);
   for (const dx of [-0.09,0.09]){
-    const em=mul(hm,mul(tr(dx,-0.3,0.22),sc(0.12,0.05,1)));
+    const em=mul(hm,mul(tr(dx,0.02,0.26),sc(0.12,0.05,1)));
     drawMesh(MESH.quad,TEX.glow,em,1,[1*eg,0.16*eg,0.1*eg]);
   }
   gl.depthMask(true); gl.disable(gl.BLEND);
   // geo
   const hP=project(b.heartW[0],b.heartW[1],b.heartW[2]);
-  const topP=project(wx,3.05*BS,wz), botP=project(wx,0,wz);
+  const topP=project(wx,3.0*BS,wz), botP=project(wx,0,wz);
   if (hP){
     const eP=project(b.heartW[0]+0.22,b.heartW[1],b.heartW[2]);
     const hr=eP?Math.max(16,Math.abs(eP.x-hP.x)*1.7):22;
