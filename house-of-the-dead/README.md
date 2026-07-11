@@ -6,10 +6,12 @@
 [KayKit 骷髅角色包](https://kaylousberg.com)（Kay Lousberg 制作，CC0 授权）
 提供 4 种完整骨骼动画的骷髅敌人与冒险者平民：破土而出（Spawn_Ground）、
 蹒跚/奔跑、挥击、受击、散架死亡全部为专业动画师手调的骨骼动画；
-Boss 为持斧骷髅武士 + 发光心脏弱点。场景为程序化搭建的三个 3D 环境
-（雨夜庭院/藏书馆/宴会厅），点光源 + 指数雾 + 640×360 低分辨率渲染
-+ 噪点扫描线后处理。模型经 gltf-transform 裁剪动画并 meshopt 压缩后
-以 base64 内嵌，整个游戏仍是**单个 HTML 文件**，无需服务器。
+Boss 为持斧骷髅武士 + 发光心脏弱点。三个场景（雨夜墓园/藏书馆/宴会厅）
+使用 KayKit **Halloween Bits** 与 **Dungeon Remastered** CC0 资产包搭建
+（墓碑/地穴/铁栅栏/南瓜灯/书墙/立柱/火把/军旗等 38 件道具），
+命中骷髅会溅射真实的骨块与头骨碎片。点光源 + 指数雾 + 640×360
+低分辨率渲染 + 噪点扫描线后处理。模型经 gltf-transform 裁剪动画并
+meshopt 压缩后以 base64 内嵌，整个游戏仍是**单个 HTML 文件**，无需服务器。
 
 历史版本同目录保留：`retro-3d.html`（纯手写 WebGL 引擎 + 程序化放样建模）、
 `classic-2d.html`（Canvas 2D 版）。
@@ -46,4 +48,6 @@ Boss 为持斧骷髅武士 + 发光心脏弱点。场景为程序化搭建的三
 
 - 角色模型与动画：**KayKit Character Pack : Skeletons / Adventurers**，
   Kay Lousberg（[kaylousberg.com](https://kaylousberg.com)），CC0 许可（免费商用，署名可选）。
-- 引擎：three.js（MIT）。其余场景、贴图、音效均为程序化生成。
+- 场景道具：**KayKit Halloween Bits** 与 **KayKit Dungeon Remastered**
+  （[github.com/KayKit-Game-Assets](https://github.com/KayKit-Game-Assets)），同为 Kay Lousberg 制作，CC0 许可。
+- 引擎：three.js（MIT）。其余贴图、音效均为程序化生成。
