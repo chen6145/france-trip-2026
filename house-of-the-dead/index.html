@@ -4219,6 +4219,8 @@ const sfx = {
           playNoise(0.3,'lowpass',500,120,0.25,0.26,0.05); },
   bone(){ playNoise(0.1,'highpass',1500,900,0.3,0.09,0); playTone('square',420,180,0.12,0.08,0); },
   ricochet(){ playTone('square',2300,1300,0.2,0.09,0); playNoise(0.06,'highpass',4000,4000,0.15,0.05,0); },
+  radio(){ playNoise(0.2,'bandpass',1800,1400,0.13,0.16,0); playTone('square',1560,1520,0.035,0.07,0.02); playNoise(0.09,'bandpass',2200,2000,0.08,0.07,0.24); },
+  crash(){ playNoise(0.4,'lowpass',900,180,0.7,0.34,0); playNoise(0.2,'highpass',1800,1200,0.4,0.16,0.02); playTone('square',160,60,0.3,0.2,0); },
   groan(base){ if(!actx||muted) return; const t=actx.currentTime;
     const o=actx.createOscillator(); o.type='sawtooth'; o.frequency.setValueAtTime(base,t);
     o.frequency.linearRampToValueAtTime(base*0.68,t+1.1);
@@ -4600,10 +4602,11 @@ function buildScene0(){ // 墓园外庭
     [-4.6,-13,'grave_b'],[4.4,-6.8,'gravemarker_b'],[-6.2,-6.5,'gravemarker_b'],[6.6,-13.6,'gravestone']];
   for (const [gx,gz,gn] of graves) P(grp,gn,gx,gz,{h:gn.startsWith('grave_')?1.4:1.1, ry:rand(-0.4,0.4)});
   // 灯柱 / 南瓜 / 白骨
-  P(grp,'lantern',-3.1,-14.2,{h:2.2});
-  P(grp,'lantern',3.1,-14.2,{h:2.2});
-  P(grp,'pumpkin',1.4,-5.2,{h:0.55,ry:0.6});
-  P(grp,'pumpkin',-1.9,-7.7,{h:0.5,ry:-1.2});
+  const items=[];
+  const la1=P(grp,'lantern',-3.1,-14.2,{h:2.2});
+  const la2=P(grp,'lantern',3.1,-14.2,{h:2.2});
+  const pk1=P(grp,'pumpkin',1.4,-5.2,{h:0.55,ry:0.6});
+  const pk2=P(grp,'pumpkin',-1.9,-7.7,{h:0.5,ry:-1.2});
   P(grp,'coffin',6,-13.6,{h:0.7,ry:0.5});
   P(grp,'skull',0.8,-4.6,{h:0.28,ry:1.2});
   P(grp,'ribcage',-1.2,-6.2,{h:0.35,ry:-0.5});
@@ -4611,9 +4614,14 @@ function buildScene0(){ // 墓园外庭
   P(grp,'tree_m',7,-13,{h:4});
   P(grp,'tree_l',-11,-17,{h:6,ry:1.4});
   const flames=[addSprite(grp,ETEX.flame,-3.1,2.15,-14.2,0.5),addSprite(grp,ETEX.flame,3.1,2.15,-14.2,0.5)];
-  addSprite(grp,ETEX.glow,1.4,0.35,-5.2,0.5,0xff8830).material.opacity=0.5;
-  addSprite(grp,ETEX.glow,-1.9,0.32,-7.7,0.45,0xff8830).material.opacity=0.5;
-  return { grp, fog:{col:0x05070f, den:0.075}, amb:{c:0x30364a,i:1.5},
+  const pg1=addSprite(grp,ETEX.glow,1.4,0.35,-5.2,0.5,0xff8830); pg1.material.opacity=0.5;
+  const pg2=addSprite(grp,ETEX.glow,-1.9,0.32,-7.7,0.45,0xff8830); pg2.material.opacity=0.5;
+  items.push(
+    {kind:'explosive', mesh:la1, extra:flames[0], x:-3.1, y:1.55, z:-14.2, r:0.62, alive:true},
+    {kind:'explosive', mesh:la2, extra:flames[1], x:3.1, y:1.55, z:-14.2, r:0.62, alive:true},
+    {kind:'pumpkin', mesh:pk1, extra:pg1, x:1.4, y:0.3, z:-5.2, r:0.42, alive:true},
+    {kind:'pumpkin', mesh:pk2, extra:pg2, x:-1.9, y:0.28, z:-7.7, r:0.4, alive:true});
+  return { grp, items, fog:{col:0x05070f, den:0.075}, amb:{c:0x30364a,i:1.5},
     dir:{d:[0.3,-0.75,-0.55], c:0x5a6c95, i:2.4},
     points:[
       {p:[-3.1,2.1,-14.2], c:0xffa040, i:8, dist:11, flick:1},
@@ -4649,9 +4657,15 @@ function buildScene1(){ // 地牢藏书室
   P(grp,'shelf_c',5.4,-12.2,{h:1.5});
   P(grp,'banner_t',-1.9,-12.92,{h:2.6,y:3.4});
   P(grp,'banner_t',1.9,-12.92,{h:2.6,y:3.4});
-  P(grp,'crates',5.9,-4,{h:1.3,ry:0.4});
-  P(grp,'barrel',-5.9,-4.2,{h:1.1});
+  const items=[];
+  const cr1=P(grp,'crates',5.9,-4,{h:1.3,ry:0.4});
+  const br1=P(grp,'barrel',-5.9,-4.2,{h:1.1});
+  const br2=P(grp,'barrel',4.7,-7.2,{h:1.05,ry:0.9});
   P(grp,'rubble',-5.9,-11.6,{h:0.8,ry:1.1});
+  items.push(
+    {kind:'loot', loot:'life', mesh:cr1, x:5.9, y:0.65, z:-4, r:0.8, alive:true},
+    {kind:'explosive', mesh:br1, x:-5.9, y:0.55, z:-4.2, r:0.62, alive:true},
+    {kind:'explosive', mesh:br2, x:4.7, y:0.52, z:-7.2, r:0.6, alive:true});
   // 吊灯
   for (let i=0;i<8;i++){
     const a=i/8*TAU;
@@ -4661,7 +4675,7 @@ function buildScene1(){ // 地牢藏书室
   const flames=[];
   for (const [fx,fy,fz] of [[-0.5,3.75,-6],[0.5,3.75,-6],[0,3.9,-6],[-3.15,2.5,-8.2],[3.15,2.5,-8.2]])
     flames.push(addSprite(grp,ETEX.flame,fx,fy,fz,0.42));
-  return { grp, fog:{col:0x0a0705, den:0.085}, amb:{c:0x2e2a24,i:1.6},
+  return { grp, items, fog:{col:0x0a0705, den:0.085}, amb:{c:0x2e2a24,i:1.6},
     dir:{d:[0.1,-1,-0.25], c:0x333844, i:0.7},
     points:[
       {p:[-4,2.4,-12.4], c:0x7a92c8, i:12, dist:13},
@@ -4701,10 +4715,17 @@ function buildScene2(){ // 大厅
     flames.push(addSprite(grp,ETEX.flame,tx+(tx<0?0.25:-0.25),2.85,tz,0.42));
   }
   // 家具
+  const items=[];
   P(grp,'table_l',-4.4,-3.1,{h:1.1,ry:0.2});
-  P(grp,'chest',4.8,-3.3,{h:0.9,ry:-0.5});
-  P(grp,'barrel',6.6,-12.6,{h:1.1});
-  P(grp,'crates',-6.4,-12.4,{h:1.3,ry:0.7});
+  const ch1=P(grp,'chest',4.8,-3.3,{h:0.9,ry:-0.5});
+  const br3=P(grp,'barrel',6.6,-12.6,{h:1.1});
+  const br4=P(grp,'barrel',-5.4,-7.6,{h:1.05,ry:0.5});
+  const cr2=P(grp,'crates',-6.4,-12.4,{h:1.3,ry:0.7});
+  items.push(
+    {kind:'loot', loot:'gold', mesh:ch1, x:4.8, y:0.5, z:-3.3, r:0.66, alive:true},
+    {kind:'explosive', mesh:br3, x:6.6, y:0.55, z:-12.6, r:0.62, alive:true},
+    {kind:'explosive', mesh:br4, x:-5.4, y:0.52, z:-7.6, r:0.6, alive:true},
+    {kind:'loot', loot:'life', mesh:cr2, x:-6.4, y:0.65, z:-12.4, r:0.8, alive:true});
   // 双吊灯
   for (const lx of [-2.6,2.6]){
     for (let i=0;i<8;i++){
@@ -4714,7 +4735,7 @@ function buildScene2(){ // 大厅
     addBox(grp,ETEX.wood,lx,4.85,-7,0.05,1.5,0.05,{tint:[0.4,0.34,0.26]});
     flames.push(addSprite(grp,ETEX.flame,lx,4.35,-7,0.4));
   }
-  return { grp, fog:{col:0x0a0710, den:0.068}, amb:{c:0x342f40,i:2.2},
+  return { grp, items, fog:{col:0x0a0710, den:0.068}, amb:{c:0x342f40,i:2.2},
     dir:{d:[0.05,-1,-0.3], c:0x3a4055, i:1.05},
     points:[
       {p:[0,2.9,-13.2], c:0x7a92c8, i:15, dist:15},
@@ -4762,7 +4783,7 @@ const TYPES = {
 const SCENES = [
   { name:'第一幕 · 外庭大门', sub:'COURTYARD — 23:47', bg:0, waves:[
     [ {t:0.6,type:'shambler',x:320}, {t:1.7,type:'shambler',x:650}, {t:3.4,type:'shambler',x:480} ],
-    [ {t:0.3,type:'shambler',x:770}, {t:0.9,type:'runner',x:190}, {t:1.8,type:'thrower',x:500}, {t:4.2,type:'shambler',x:350} ],
+    [ {t:0.3,type:'shambler',x:770}, {t:0.9,type:'runner',x:190}, {t:1.4,type:'grab',x:560}, {t:2.2,type:'thrower',x:500}, {t:4.6,type:'shambler',x:350} ],
   ]},
   { name:'第二幕 · 藏书馆', sub:'THE LIBRARY — 00:04', bg:1, waves:[
     [ {t:0.4,type:'shambler',x:260}, {t:1.0,type:'shambler',x:700}, {t:1.6,type:'civ',x:-40}, {t:3.4,type:'runner',x:480}, {t:5.2,type:'shambler',x:610} ],
@@ -4770,7 +4791,7 @@ const SCENES = [
   ]},
   { name:'第三幕 · 宴会大厅', sub:'BALLROOM — 00:19', bg:2, waves:[
     [ {t:0.6,type:'brute',x:480}, {t:1.8,type:'shambler',x:230}, {t:2.8,type:'shambler',x:730} ],
-    [ {t:0.3,type:'runner',x:310}, {t:0.9,type:'runner',x:640}, {t:1.6,type:'civ',x:1000}, {t:2.4,type:'shambler',x:180}, {t:3.1,type:'thrower',x:760}, {t:5.4,type:'runner',x:480}, {t:6.6,type:'brute',x:560} ],
+    [ {t:0.3,type:'runner',x:310}, {t:0.9,type:'runner',x:640}, {t:1.8,type:'grab',x:270}, {t:2.6,type:'shambler',x:180}, {t:3.3,type:'thrower',x:760}, {t:5.6,type:'runner',x:480}, {t:6.8,type:'brute',x:560} ],
   ]},
 ];
 const STORY = [
@@ -4799,10 +4820,39 @@ const G = {
   msg:null,
   boss:null, continueT:0, storyChars:0,
   sceneClean:true, groanCd:1, heartCd:0, stepCd:0,
-  ltT:5, ltFlash:0, flkT:8, flk:0, waveStung:false,
+  ltT:5, ltFlash:0, flkT:8, flk:0, waveStung:false, radio:null,
   paused:false,
 };
 const CAM = { x:0, y:1.5, z:0 };
+// ---------- 电影化镜头 ----------
+const CINE = { yaw:0, pitch:0, fov:60, letter:0, slow:1, slowT:0, tYaw:0, tPitch:0, tFov:60, hold:0 };
+function cineLookWorld(wx,wy,wz,opt){
+  opt=opt||{};
+  const dx=wx-CAM.x, dy=wy-CAM.y, dz=wz-CAM.z;
+  CINE.tYaw = clamp(Math.atan2(-dx,-dz), -0.5, 0.5);
+  CINE.tPitch = clamp(Math.atan2(dy, Math.hypot(dx,dz)), -0.26, 0.26);
+  CINE.tFov = opt.fov||52;
+  CINE.hold = opt.hold||1.0;
+}
+function cineSlow(f,dur){ CINE.slow=f; CINE.slowT=dur; }
+function updateCine(dt){
+  if (CINE.slowT>0){ CINE.slowT-=dt; if (CINE.slowT<=0) CINE.slow=1; }
+  CINE.hold-=dt;
+  if (CINE.hold<=0){ CINE.tYaw=0; CINE.tPitch=0; CINE.tFov=60; }
+  const k=Math.min(1,dt*6.5);
+  CINE.yaw+=(CINE.tYaw-CINE.yaw)*k;
+  CINE.pitch+=(CINE.tPitch-CINE.pitch)*k;
+  CINE.fov+=(CINE.tFov-CINE.fov)*Math.min(1,dt*5);
+  const wl=(G.state==='walk'||G.state==='scene_intro'||G.state==='bossintro'||G.state==='bossdie'||CINE.hold>0)?1:0;
+  CINE.letter+=(wl-CINE.letter)*Math.min(1,dt*4.5);
+}
+// ---------- 电台通讯字幕 ----------
+function radioSay(name, txt, dur){ G.radio={name, txt, t:0, dur:dur||3.4}; if (sfx.radio) sfx.radio(); }
+const RADIO_INTRO=[
+  ['罗根','G，我到宅邸了……庭院的土里全是那些东西。'],
+  ['罗根','到处都是书，还有血迹——它们就在里面。'],
+  ['G','罗根，心跳信号来自大厅深处，万分小心。'],
+];
 const aim = { x:W/2, y:H/2 };
 const rain = Array.from({length:90}, ()=>({x:rand(0,W), y:rand(0,H), s:rand(400,600)}));
 const RELOAD_BTN = { x:W-152, y:H-62, w:132, h:44 };
@@ -4829,6 +4879,7 @@ function sparks(x,y,n){
 
 // ---------- 生成 ----------
 function spawnZombie(type, x0){
+  if (type === 'grab'){ spawnGrabEvent(x0); return; }
   const tp = TYPES[type];
   if (type === 'civ'){
     const dir = x0 < W/2 ? 1 : -1;
@@ -4838,8 +4889,10 @@ function spawnZombie(type, x0){
     z.char.setAnim('walk');
     G.zombies.push(z);
     sfx.civ(); say('平民！不要开枪！','DON\'T SHOOT!',1.5,'#9ad9ff');
+    cineLookWorld(z.wx, 1.3, baseZ()-5.5, {fov:54, hold:1.2});
     return;
   }
+  const firstOfWave = !G.waveStung;
   if (!G.waveStung || type==='brute'){ sfx.sting(); G.waveStung = true; }
   sfx.rise();
   const z = { type, tp, wx0:toWX(x0), wxT:toWX(x0)*0.55,
@@ -4849,6 +4902,25 @@ function spawnZombie(type, x0){
     char:makeChar(type) };
   z.char.setAnim('spawn',{once:true});
   G.zombies.push(z);
+  const swz=toWZ(z.z);
+  spawnChips3D({x:z.wx0, y:0.12, z:swz}, 2, false); // 破土碎屑
+  if (firstOfWave || type==='brute') cineLookWorld(z.wx0, 0.9, swz, {fov:55, hold:0.85});
+}
+// ---------- 僵尸挟持平民事件 ----------
+function spawnGrabEvent(x0){
+  const wx = toWX(x0);
+  const c = { type:'civ', tp:TYPES.civ, civ:true, dir:0, wx, z:0.5, hp:1,
+    state:'grabbed', t:0, phase:rand(0,TAU), flash:0, geo:null, char:makeChar('civ') };
+  c.char.setAnim('idle');
+  const zb = { type:'shambler', tp:TYPES.shambler, wx0:wx+0.42, wxT:wx+0.42,
+    z:0.75, hp:3, spd:TYPES.shambler.spd, state:'grabbing', t:0, gT:0.9,
+    phase:rand(0,TAU), flash:0, geo:null, headshot:false,
+    gaitSeed:rand(0,TAU), faceJit:0, char:makeChar('shambler'), grabHold:c };
+  zb.char.setAnim('attack',{once:true, then:'idle'});
+  G.zombies.push(c, zb);
+  sfx.scream(); sfx.sting();
+  say('救 她 ！','SHOOT THE ZOMBIE — DON\'T HIT HER!',2.4,'#9ad9ff');
+  cineLookWorld(wx+0.2, 1.35, toWZ(0.72), {fov:48, hold:2.0});
 }
 
 // ---------- 关卡推进 ----------
@@ -4865,6 +4937,7 @@ function startScene(i){
   clearField();
   switchScene(SCENES[i].bg);
   setState('scene_intro');
+  if (RADIO_INTRO[i]) radioSay(RADIO_INTRO[i][0], RADIO_INTRO[i][1], 4.2);
 }
 function startWave(){
   const wave = SCENES[G.sceneIdx].waves[G.waveIdx];
@@ -4873,8 +4946,11 @@ function startWave(){
 }
 function sceneCleared(){
   if (G.sceneClean){ G.score += 500; addPop(W/2, H/2-40, 'PERFECT +500', '#7dffa8', true); }
-  if (G.sceneIdx + 1 < SCENES.length){ initWalk(G.sceneIdx); setState('walk'); }
-  else { setState('bossintro'); sfx.roar(); }
+  if (G.sceneIdx + 1 < SCENES.length){
+    initWalk(G.sceneIdx); setState('walk');
+    radioSay('G', G.sceneIdx===0? '穿过大门，省着点弹药。':'就快到大厅了，信号越来越强。', 3.4);
+  }
+  else { setState('bossintro'); sfx.roar(); radioSay('G','检测到巨大生物反应——瞄准它的心脏！',3.8); }
 }
 function initBoss(){
   clearField();
@@ -4893,6 +4969,9 @@ function resetRun(){
     civSaved:0, civKilled:0, hurtT:0, shake:0, msg:null });
   clearField();
   G.parts.length=0; G.pops.length=0; G.effects.length=0;
+  G.radio=null; EXPL.length=0;
+  Object.assign(CINE,{yaw:0,pitch:0,fov:60,letter:0,slow:1,slowT:0,tYaw:0,tPitch:0,tFov:60,hold:0});
+  if (SCENES3.length) resetItems();
   switchScene(0);
 }
 
@@ -4937,11 +5016,14 @@ function tryHit(mx,my){
         if (b.windupDmg >= BOSS_CFG.staggerNeed){
           b.state='stagger'; b.t=0; sfx.roar(); say('破绽！','STAGGERED',1.1,'#7dffa8');
           b.char.setAnim('hit',{once:true, then:'idle'});
+          cineSlow(0.35,0.55);
+          cineLookWorld(b.heartW.x,b.heartW.y,b.heartW.z,{fov:47,hold:1.0});
         }
       }
       G.score += 50; blood(mx,my,10,'#8a1810',160); addPop(mx,my,'+50','#ff8d7a'); sfx.head();
       spawnChips3D(b.heartW, 2, false);
-      if (b.hp <= 0){ b.dead = true; b.char.setAnim('death',{once:true}); setState('bossdie'); sfx.boom(); }
+      if (b.hp <= 0){ b.dead = true; b.char.setAnim('death',{once:true}); setState('bossdie'); sfx.boom();
+        cineSlow(0.3,1.3); cineLookWorld(b.heartW.x,b.heartW.y,b.heartW.z,{fov:44,hold:2.6}); }
       return true;
     }
     if (mx>g.bx && mx<g.bx+g.bw && my>g.by && my<g.by+g.bh){
@@ -4966,7 +5048,54 @@ function tryHit(mx,my){
     if (hx*hx+hy*hy < g.hr*g.hr){ damageZombie(z, 3, true, mx, my); return true; }
     if (mx>g.bx && mx<g.bx+g.bw && my>g.by && my<g.by+g.bh){ damageZombie(z, 1, false, mx, my); return true; }
   }
+  if (tryHitProps(mx,my)) return true;
   return false;
+}
+
+// ---------- 可互动场景道具 ----------
+const EXPL=[];
+function curBg(){ return SCENES[Math.min(G.sceneIdx,SCENES.length-1)].bg; }
+function sceneItems(){ const S=SCENES3[curBg()]; return (S&&S.items)||[]; }
+function resetItems(){
+  for (const S of SCENES3) for (const it of (S.items||[])){
+    it.alive=true; it.mesh.visible=true; if (it.extra) it.extra.visible=true;
+  }
+}
+function tryHitProps(mx,my){
+  for (const it of sceneItems()){
+    if (!it.alive) continue;
+    const wz=it.z+OFF[curBg()];
+    const pj=project(it.x,it.y,wz); if (!pj) continue;
+    const pe=project(it.x+it.r,it.y,wz);
+    const rr=pe? Math.max(11,Math.abs(pe.x-pj.x)) : 15;
+    const dx=mx-pj.x, dy=my-pj.y;
+    if (dx*dx+dy*dy<rr*rr){ destroyProp(it,pj,wz); return true; }
+  }
+  return false;
+}
+function destroyProp(it,pj,wz){
+  it.alive=false; it.mesh.visible=false; if (it.extra) it.extra.visible=false;
+  if (it.kind==='pumpkin'){
+    G.score+=50; addPop(pj.x,pj.y,'+50','#ffb050');
+    blood(pj.x,pj.y,16,'#e07818',150); sfx.hit();
+  } else if (it.kind==='loot'){
+    blood(pj.x,pj.y,12,'#8a6a3a',140); sfx.crash();
+    if (it.loot==='gold'){ G.score+=1000; addPop(pj.x,pj.y,'秘藏 +1000','#ffd700',true); sfx.coin(); }
+    else if (G.lives<G.maxLives){ heal(1); addPop(pj.x,pj.y,'生命 +1','#7dffa8',true); sfx.coin(); }
+    else { G.score+=500; addPop(pj.x,pj.y,'+500','#7dffa8',true); sfx.coin(); }
+  } else { // explosive
+    G.score+=100; addPop(pj.x,pj.y,'+100','#ffb050');
+    sfx.boom(); addShake(10);
+    G.effects.push({type:'fire', x:pj.x, y:pj.y, t:0});
+    EXPL.push({t:0, x:it.x, y:it.y, z:wz});
+    spawnChips3D({x:it.x, y:it.y+0.25, z:wz}, 4, false);
+    for (const z of G.zombies){
+      if (z.civ || z.state==='dying' || !z.geo) continue;
+      const zx=lerp(z.wx0,z.wxT,z.z), zz=toWZ(z.z);
+      if ((zx-it.x)*(zx-it.x)+(zz-wz)*(zz-wz) < 6.8) damageZombie(z, 5, false, z.geo.hx, z.geo.hy);
+    }
+    cineSlow(0.5,0.3);
+  }
 }
 
 function killZombie(z, head){
@@ -4974,6 +5103,23 @@ function killZombie(z, head){
   G.kills++;
   z.char.setAnim('death',{once:true});
   addPool(z.civ?z.wx:lerp(z.wx0,z.wxT,z.z), z.civ?baseZ()-5.5:toWZ(z.z));
+  if (z.grabHold){ // 营救成功
+    const c=z.grabHold; z.grabHold=null;
+    if (c.state==='grabbed'){
+      c.state='walk'; c.dir = c.wx<0? -1 : 1;
+      c.char.setAnim('walk');
+      say('快跑！','GO! GO!',1.4,'#7dffa8'); sfx.civ();
+      cineSlow(0.3,0.55);
+    }
+  }
+  if (G.state==='play' && !G.pending.length &&
+      !G.zombies.some(o=>o!==z && !o.civ && o.state!=='dying')){
+    // 本波最后一杀：处决镜头
+    const src=z.char.chest||z.char.obj;
+    src.getWorldPosition(_wp);
+    cineSlow(0.22,0.6);
+    cineLookWorld(_wp.x,_wp.y,_wp.z,{fov:50,hold:0.8});
+  }
 }
 function damageZombie(z, d, head, mx, my){
   z.hp -= d; z.flash = 0.12; z.z = Math.max(0.02, z.z - 0.016);
@@ -5000,6 +5146,11 @@ function damageZombie(z, d, head, mx, my){
 
 // ---------- 更新 ----------
 function update(dt){
+  updateCine(dt);
+  if (G.radio){ G.radio.t+=dt; if (G.radio.t>G.radio.dur) G.radio=null; }
+  dt *= CINE.slow; // 慢动作作用于游戏时间
+  for (const e of EXPL) e.t+=dt;
+  for (let i=EXPL.length-1;i>=0;i--) if (EXPL[i].t>0.42) EXPL.splice(i,1);
   G.tGlobal += dt; G.t += dt;
   G.hurtT = Math.max(0, G.hurtT - dt*1.6);
   G.shake = Math.max(0, G.shake - dt*26);
@@ -5041,7 +5192,7 @@ function update(dt){
   for (const p of G.pops) p.t+=dt;
   G.pops = G.pops.filter(p=>p.t<0.95);
   for (const e of G.effects) e.t+=dt;
-  G.effects = G.effects.filter(e=>e.t<0.4);
+  G.effects = G.effects.filter(e=>e.t < (e.type==='fire'?0.5:0.4));
 
   switch (G.state){
     case 'loading': case 'title': break;
@@ -5064,7 +5215,7 @@ function update(dt){
       if (Math.random()<0.3 && G.boss.geo){
         blood(G.boss.geo.heartX+rand(-70,70), G.boss.geo.heartY+rand(-100,80), 8, '#8a1810', 240);
       }
-      if (G.t > 2.4){ G.score += 5000; setState('victory'); sfx.coin(); }
+      if (G.t > 2.4){ G.score += 5000; setState('victory'); sfx.coin(); radioSay('罗根','……结束了。我这就回来。',4.0); }
       break;
     case 'continue':
       G.continueT -= dt;
@@ -5107,6 +5258,7 @@ function updateZombies(dt){
     z.flash = Math.max(0, z.flash - dt);
     if (z.state==='dying'){ z.t += dt; continue; }
     if (z.civ){
+      if (z.state==='grabbed') continue;
       z.wx += z.dir * 1.6 * dt;
       if ((z.dir>0 && z.wx > 7.5) || (z.dir<0 && z.wx < -7.5)){
         z.state='gone'; G.civSaved++; heal(1);
@@ -5146,6 +5298,30 @@ function updateZombies(dt){
         z.t += dt;
         if (z.t > 0.5){ z.z = 0.8; z.state='walk'; z.char.setAnim('walk'); }
         break;
+      case 'grabbing': {
+        z.t += dt; z.gT -= dt;
+        const c=z.grabHold;
+        if (!c || c.state==='dying' || c.state==='gone'){
+          z.grabHold=null; z.state='walk'; z.char.setAnim('walk'); break;
+        }
+        if (z.gT<=0){ // 反复撕咬，平民挣扎
+          z.gT=1.5;
+          z.char.setAnim('attack',{once:true, then:'idle'});
+          c.char.setAnim('hit',{once:true, then:'idle'});
+          sfx.scream();
+        }
+        if (z.t > 5.4){ // 营救失败
+          z.grabHold=null;
+          c.state='dying'; c.t=0; c.char.setAnim('death',{once:true});
+          G.civKilled++; G.sceneClean=false;
+          G.score=Math.max(0,G.score-500);
+          say('平民被害！','-500',1.8,'#ff5a4e'); sfx.scream();
+          if (c.geo) blood(c.geo.hx,c.geo.hy+20,22,undefined,150);
+          cineLookWorld(c.wx,1.1,toWZ(0.72),{fov:50,hold:1.1});
+          z.state='walk'; z.char.setAnim('walk');
+        }
+        break;
+      }
     }
   }
   G.zombies = G.zombies.filter(z=>{
@@ -5189,7 +5365,8 @@ function updateBoss(dt){
       b.z = lerp(0.06, 0.62, Math.min(1, b.t/2.6));
       b.vulnerable = false;
       if (b.t > 2.8){ b.state='expose'; b.t=0; sfx.roar(); b.char.setAnim('idle');
-        say('弱点：心脏','AIM FOR THE HEART',1.6,'#ff8d7a'); }
+        say('弱点：心脏','AIM FOR THE HEART',1.6,'#ff8d7a');
+        cineLookWorld(b.heartW.x,b.heartW.y,b.heartW.z,{fov:46,hold:1.6}); }
       break;
     case 'expose':
       b.vulnerable = true;
@@ -5501,7 +5678,7 @@ function syncEntities(dt){
     const wx = z.civ? z.wx : lerp(z.wx0,z.wxT,z.z);
     const lunge = (z.state==='windup')? Math.pow(Math.min(1,z.t/0.7),3)*0.4 : 0;
     z.char.obj.position.set(wx,0,wz+lunge);
-    if (z.civ) z.char.obj.rotation.y = FACE + (z.dir>0? Math.PI/2 : -Math.PI/2);
+    if (z.civ) z.char.obj.rotation.y = FACE + (z.state==='grabbed'? 0 : (z.dir>0? Math.PI/2 : -Math.PI/2));
     else z.char.obj.rotation.y = FACE + (z.faceJit||0);
     z.char.update(dt);
     computeGeo(z, wx, wz);
@@ -5682,6 +5859,22 @@ function drawHUD(){
     ctx.restore();
   }
 }
+function drawRadio(){
+  if (!G.radio) return;
+  const r=G.radio;
+  const chars=Math.min(r.txt.length, Math.floor(r.t*22));
+  const a = r.t>r.dur-0.4? Math.max(0,(r.dur-r.t)/0.4) : Math.min(1,r.t/0.12);
+  ctx.save(); ctx.globalAlpha=a;
+  const y=H-102, bw=W*0.6;
+  ctx.fillStyle='rgba(0,0,0,0.55)';
+  ctx.fillRect(W/2-bw/2, y-15, bw, 28);
+  ctx.fillStyle='#e0c98e';
+  ctx.fillRect(W/2-bw/2, y-15, 3, 28);
+  const blink=Math.sin(G.tGlobal*12)>0?'▸':' ';
+  cnTxt('『'+r.name+'』', W/2-bw/2+12, y, 14, '#e0c98e', 'left');
+  cnTxt(r.txt.slice(0,chars)+(chars<r.txt.length?blink:''), W/2-bw/2+12+(r.name.length+2)*15+8, y, 14, '#e8e6da', 'left');
+  ctx.restore();
+}
 function drawCrosshair(){
   const x=aim.x, y=aim.y;
   if (G.muzzle>0){
@@ -5719,6 +5912,18 @@ function drawOverlayFX(){
     ctx.restore();
   }
   for (const e of G.effects){
+    if (e.type==='fire'){
+      const p=e.t/0.5, r=30+p*150;
+      ctx.save(); ctx.globalAlpha=(1-p)*0.95;
+      const fg=ctx.createRadialGradient(e.x,e.y,4,e.x,e.y,r);
+      fg.addColorStop(0,'rgba(255,240,190,0.95)');
+      fg.addColorStop(0.3,'rgba(255,150,40,0.75)');
+      fg.addColorStop(0.7,'rgba(180,50,10,0.35)');
+      fg.addColorStop(1,'rgba(60,20,5,0)');
+      ctx.fillStyle=fg; ctx.beginPath(); ctx.arc(e.x,e.y,r,0,TAU); ctx.fill();
+      ctx.restore();
+      continue;
+    }
     if (e.type!=='claw') continue;
     const p=e.t/0.4;
     ctx.save(); ctx.globalAlpha=1-p;
@@ -5811,6 +6016,12 @@ function renderUI(){
     }
     case 'gameover': renderGameover(); break;
     case 'victory': renderVictory(); break;
+  }
+  if (G.state==='play'||G.state==='boss'||G.state==='walk'||G.state==='scene_intro'||G.state==='bossintro'||G.state==='bossdie') drawRadio();
+  if (CINE.letter>0.01 && G.state!=='story' && G.state!=='title'){
+    const bh=CINE.letter*46;
+    ctx.fillStyle='#000';
+    ctx.fillRect(0,0,W,bh); ctx.fillRect(0,H-bh,W,bh);
   }
   if (G.state!=='loading') crtFX();
 }
@@ -5931,7 +6142,8 @@ function render3(dt){
   const shx=G.shake>0?rand(-G.shake,G.shake)*0.0022:0;
   const shy=G.shake>0?rand(-G.shake,G.shake)*0.0022:0;
   camera.position.set(CAM.x, CAM.y, CAM.z);
-  camera.rotation.set(shy, shx + (G.wyaw||0), 0);
+  camera.rotation.set(shy + CINE.pitch, shx + (G.wyaw||0) + CINE.yaw, 0);
+  if (Math.abs(camera.fov-CINE.fov)>0.02){ camera.fov=CINE.fov; camera.updateProjectionMatrix(); }
   // 灯光闪烁 / 事故 / 闪电
   let dim=1;
   if (G.flk>0) dim=1-0.85*Math.abs(Math.sin(G.tGlobal*60))*(G.flk/0.55);
@@ -5957,9 +6169,19 @@ function render3(dt){
     S.winMats[i].opacity=0.4+0.28*Math.sin(G.tGlobal*6+i*2.4);
     S.winMats[i].transparent=true;
   }
+  // 爆炸点光（借用行进提灯灯位，行进状态外可用）
+  if (G.state!=='walk'){
+    const L6=LIGHTS.pts[6];
+    if (EXPL.length){
+      const e=EXPL[EXPL.length-1];
+      L6.visible=true; L6.color.set(0xff7a20); L6.distance=9;
+      L6.position.set(e.x, e.y+0.6, e.z);
+      L6.userData={base:34*Math.max(0,1-e.t/0.42), mul:1, expl:true};
+    } else if (L6.visible && L6.userData && L6.userData.expl){ L6.visible=false; }
+  }
   if (G.state==='title') ensureTitleWalker(); else hideTitleWalker();
-  updateChips(dt);
-  syncEntities(dt);
+  updateChips(dt*CINE.slow);
+  syncEntities(dt*CINE.slow);
   renderer.render(scene,camera);
 }
 
