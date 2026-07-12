@@ -2,16 +2,17 @@
 
 向 1996 年 SEGA 街机经典《The House of the Dead》致敬的轨道光枪射击游戏。
 
-**正式版**（`index.html`）：three.js + 专业 CC0 资产。敌人阵容为
-Quaternius《Ultimate Monsters》（CC0）——**腐尸**（贴图真僵尸）、
-**巨蛛**、**食人幽灵**（半透明冲脸）、**堕天恶魔 Boss**（悬浮扇翼 +
-发光心脏弱点），外加 KayKit 骷髅法师掷斧手；全部为专业骨骼动画。
-三个场景（雨夜墓园/藏书馆/宴会厅）
+**正式版**（`index.html`）：three.js + 写实风格恐怖角色。敌人阵容全部为
+真实比例的骨骼动画模型（Sketchfab CC-BY）——**蹒跚尸**（rato biônico games，
+含三种死法与方向受击）、**憔悴尸**（pxltiger，全 PBR 贴图夜光眼）、
+**舔食者**（italianPie，低伏疾爬），Boss 为**苍白之物**——《SCP:
+Containment Breach》的 SCP-096（CC-BY-SA），尖啸入场、弱点心脏。
+四个场景（雨夜墓园/藏书馆/宴会厅/大圣堂）
 使用 KayKit **Halloween Bits** 与 **Dungeon Remastered** CC0 资产包搭建
-（墓碑/地穴/铁栅栏/南瓜灯/书墙/立柱/火把/军旗等 38 件道具），
-命中骷髅会溅射真实的骨块与头骨碎片。点光源 + 指数雾 + 640×360
-低分辨率渲染 + 噪点扫描线后处理。模型经 gltf-transform 裁剪动画并
-meshopt 压缩后以 base64 内嵌，整个游戏仍是**单个 HTML 文件**，无需服务器。
+（墓碑/地穴/铁栅栏/南瓜灯/书墙/立柱/火把/军旗等道具）。
+点光源 + 指数雾 + 640×360
+低分辨率渲染 + 噪点扫描线后处理。模型经 gltf-transform 裁剪动画、
+贴图压成 webp 后以 base64 内嵌，整个游戏仍是**单个 HTML 文件**，无需服务器。
 
 历史版本同目录保留：`retro-3d.html`（纯手写 WebGL 引擎 + 程序化放样建模）、
 `classic-2d.html`（Canvas 2D 版）。
@@ -55,26 +56,31 @@ meshopt 压缩后以 base64 内嵌，整个游戏仍是**单个 HTML 文件**，
 - **可互动场景**：油灯/油桶可以射爆（火球+范围杀伤）、南瓜灯可以打碎、
   木箱藏着生命、金柜藏着大分；标志性的**挟持营救**事件——僵尸抓住平民，
   在它撕咬前精准击毙（别打中人质！），救下可获生命奖励。
-- 敌人：**腐尸**（跃出泥土冲刺扑咬）、**巨蛛**（低伏疾爬）、
-  **食人幽灵**（半透明鬼影盘旋俯冲，镜头自动跟拍）、掷斧邪教徒
-  （飞斧可以在空中击落，蹲守门拱/柱顶）、Boss 为**堕天恶魔**
-  （圣堂玫瑰花窗下悬浮扇翼，狂暴后召唤伏击）。
+- 敌人：**蹒跚尸**（破土/翻窗突入，三种死法、按中弹方向受击）、
+  **憔悴尸**（夜光眼写实僵尸，前倒/后倒两种倒地）、**舔食者**
+  （低伏疾爬、飞身扑击，反应窗口最短），Boss 为**苍白之物**
+  （SUBJECT: 096-B——尖啸暴走的苍白瘦长人形，狂暴后从背后召唤伏击）。
 - 平民为真人模型（便装村民 / 白大褂研究员，随机出现），头顶绿色
-  「平民」标记，被挟持时闪烁「人质」——和白骨一眼区分。
+  「平民」标记，被挟持时闪烁「人质」——和怪物一眼区分。
 - **爆头**即死并有额外加分；子弹打空要及时装弹。
 - **不要射击平民**——护送他们逃脱可以回复 1 点生命。
-- Boss「刽子手 TYPE-017」：弱点是胸口的**心脏**，蓄力攻击时集火可以打断它。
+- Boss「苍白之物 THE PALE ONE」：弱点是胸口的**心脏**，蓄力攻击时集火可以打断它。
 - 生命耗尽可以无限投币 CONTINUE（街机传统艺能），通关按命中率结算 S–D 评级。
 
 ## 素材致谢
 
-- 角色模型与动画：**KayKit Character Pack : Skeletons / Adventurers**，
-  Kay Lousberg（[kaylousberg.com](https://kaylousberg.com)），CC0 许可（免费商用，署名可选）。
+- 敌人角色（均为 Sketchfab 作品，**CC-BY 4.0**，已按许可署名）：
+  - 蹒跚尸：《zombie》by **rato biônico games**（sketchfab.com/felip32pppp）；
+  - 憔悴尸：《Zombie》by **pxltiger**（sketchfab.com/pxltiger）；
+  - 舔食者：《Zombie licker》by **italianPie**（sketchfab.com/italianPie）。
+- Boss「苍白之物」：SCP-096 模型与动画取自 **《SCP – Containment Breach》**
+  （Joonas Rikkonen "Regalis" 与 SCP:CB 团队，
+  [github.com/Regalis11/scpcb](https://github.com/Regalis11/scpcb)），
+  **CC-BY-SA 3.0** 许可——本作对该模型的裁剪/压缩版本依 ShareAlike
+  条款同样以 CC-BY-SA 3.0 提供。
 - 场景道具：**KayKit Halloween Bits** 与 **KayKit Dungeon Remastered**
-  （[github.com/KayKit-Game-Assets](https://github.com/KayKit-Game-Assets)），同为 Kay Lousberg 制作，CC0 许可。
+  （[github.com/KayKit-Game-Assets](https://github.com/KayKit-Game-Assets)），Kay Lousberg 制作，CC0 许可。
 - 平民角色：**Quaternius — Ultimate Animated Character Pack**
-  （[quaternius.com](https://quaternius.com)），CC0 许可。
-- 敌人怪物（腐尸/巨蛛/幽灵/恶魔）：**Quaternius — Ultimate Monsters**
   （[quaternius.com](https://quaternius.com)），CC0 许可。
 - 恐怖场景件（蛛网/掘开的坟/祭坛/烛堆/火盆）：**Quaternius 地牢包**（CC0）
   与 **Kenney — Graveyard Kit**（[kenney.nl](https://kenney.nl)，CC0）。
