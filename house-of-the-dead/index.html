@@ -5905,7 +5905,9 @@ const CHAR_DEF = {
   // 瘦骨僵尸（pxltiger / CC-BY）
   gaunt:   { model:'gaunt', anims:{walk:'Run_InPlace',slow:'Walk_InPlace',attack:'Attack',hit:'Idle',death:'FallingForward',death2:'FallingBack',idle:'Idle'} },
   // 舔式爬行者（italianPie / CC-BY）
-  runner:  { model:'licker', anims:{walk:'clip_01',fast:'clip_05',attack:'clip_04',hit:'clip_11',death:'clip_09',idle:'clip_01',jump:'clip_12'} },
+  // 贴图原色过于苍白，夜景里像白鬼影——乘血肉色调 + 微暖自发光
+  runner:  { model:'licker', anims:{walk:'clip_01',fast:'clip_05',attack:'clip_04',hit:'clip_11',death:'clip_09',idle:'clip_01',jump:'clip_12'},
+    tint:0xc06a58, emTint:0x180a06 },
   civ:     { model:'civ_f',   anims:{walk:'Walk',run:'Run',death:'Death',hit:'RecieveHit',idle:'Idle'}, scale:1.75 },
   civ2:    { model:'civ_doc', anims:{walk:'Walk',run:'Run',death:'Death',hit:'RecieveHit',idle:'Idle'}, scale:1.8 },
   // 苍白之物 Boss（SCP-CB / CC-BY-SA，单时间轴按帧区间切割；b3d 原生 20fps）
@@ -6001,6 +6003,8 @@ function makeChar(kind){
       n.material.metalness=0;
       const isCiv=kind.startsWith('civ');
       if (isCiv) n.material.color.multiplyScalar(1.4); // 平民提亮以区分怪物
+      if (def.tint) n.material.color.multiply(new THREE.Color(def.tint));
+      if (def.emTint && n.material.emissive){ n.material.emissive.set(def.emTint); n.material.emissiveIntensity=1; }
       if (def.mood){
         n.material.color.multiplyScalar(def.mood.dark);
         if (n.material.emissive){
