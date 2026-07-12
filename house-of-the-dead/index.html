@@ -4783,15 +4783,15 @@ const TYPES = {
 const SCENES = [
   { name:'第一幕 · 外庭大门', sub:'COURTYARD — 23:47', bg:0, waves:[
     [ {t:0.6,type:'shambler',x:320}, {t:1.7,type:'shambler',x:650}, {t:3.4,type:'shambler',x:480} ],
-    [ {t:0.3,type:'shambler',x:770}, {t:0.9,type:'runner',x:190}, {t:1.4,type:'grab',x:560}, {t:2.2,type:'thrower',x:500}, {t:4.6,type:'shambler',x:350} ],
+    [ {t:0.3,type:'shambler',x:770}, {t:0.9,type:'runner',x:190}, {t:1.4,type:'grab',x:560}, {t:2.2,type:'thrower',x:500}, {t:3.2,type:'flyer',x:260}, {t:3.9,type:'flyer',x:700}, {t:4.8,type:'shambler',x:350} ],
   ]},
   { name:'第二幕 · 藏书馆', sub:'THE LIBRARY — 00:04', bg:1, waves:[
-    [ {t:0.4,type:'shambler',x:260}, {t:1.0,type:'shambler',x:700}, {t:1.6,type:'civ',x:-40}, {t:3.4,type:'runner',x:480}, {t:5.2,type:'shambler',x:610} ],
-    [ {t:0.3,type:'runner',x:270}, {t:1.1,type:'runner',x:680}, {t:2.0,type:'thrower',x:480}, {t:4.6,type:'runner',x:400}, {t:5.4,type:'shambler',x:790} ],
+    [ {t:0.4,type:'shambler',x:260}, {t:1.0,type:'shambler',x:700}, {t:1.6,type:'civ',x:-40}, {t:2.6,type:'flyer',x:480}, {t:3.4,type:'runner',x:480}, {t:5.2,type:'shambler',x:610} ],
+    [ {t:0.3,type:'runner',x:270}, {t:0.8,type:'perch',x:480,py:2.6,pz:0.27}, {t:1.1,type:'runner',x:680}, {t:2.0,type:'thrower',x:700}, {t:2.8,type:'flyer',x:250}, {t:3.5,type:'flyer',x:640}, {t:4.8,type:'runner',x:400}, {t:5.6,type:'shambler',x:790} ],
   ]},
   { name:'第三幕 · 宴会大厅', sub:'BALLROOM — 00:19', bg:2, waves:[
-    [ {t:0.6,type:'brute',x:480}, {t:1.8,type:'shambler',x:230}, {t:2.8,type:'shambler',x:730} ],
-    [ {t:0.3,type:'runner',x:310}, {t:0.9,type:'runner',x:640}, {t:1.8,type:'grab',x:270}, {t:2.6,type:'shambler',x:180}, {t:3.3,type:'thrower',x:760}, {t:5.6,type:'runner',x:480}, {t:6.8,type:'brute',x:560} ],
+    [ {t:0.6,type:'brute',x:480}, {t:1.4,type:'perch',x:300,py:2.9,pz:0.16}, {t:1.9,type:'perch',x:660,py:2.9,pz:0.16}, {t:2.8,type:'shambler',x:730}, {t:3.5,type:'shambler',x:230} ],
+    [ {t:0.3,type:'runner',x:310}, {t:0.9,type:'runner',x:640}, {t:1.8,type:'grab',x:270}, {t:2.6,type:'shambler',x:180}, {t:3.3,type:'thrower',x:760}, {t:4.1,type:'flyer',x:480}, {t:4.7,type:'flyer',x:200}, {t:5.8,type:'runner',x:480}, {t:6.9,type:'brute',x:560} ],
   ]},
 ];
 const STORY = [
@@ -4811,7 +4811,7 @@ function toWZ(zz){ return baseZ() + lerp(-16, -1.45, Math.pow(clamp(zz,0,1),1.12
 const G = {
   state:'loading', t:0, tGlobal:0,
   sceneIdx:0, waveIdx:0, waveT:0, pending:[], lull:0,
-  zombies:[], hatchets:[], parts:[], pops:[], effects:[], corpses:[],
+  zombies:[], hatchets:[], parts:[], pops:[], effects:[], corpses:[], flyers:[],
   ammo:6, mag:6, reloading:false, reloadT:0,
   lives:5, maxLives:7,
   score:0, shots:0, hits:0, kills:0,
@@ -4843,7 +4843,7 @@ function updateCine(dt){
   CINE.yaw+=(CINE.tYaw-CINE.yaw)*k;
   CINE.pitch+=(CINE.tPitch-CINE.pitch)*k;
   CINE.fov+=(CINE.tFov-CINE.fov)*Math.min(1,dt*5);
-  const wl=(G.state==='walk'||G.state==='scene_intro'||G.state==='bossintro'||G.state==='bossdie'||CINE.hold>0)?1:0;
+  const wl=(G.state==='walk'||G.state==='scene_intro'||G.state==='bossintro'||G.state==='bossdie'||CINE.hold>0.3)?1:0;
   CINE.letter+=(wl-CINE.letter)*Math.min(1,dt*4.5);
 }
 // ---------- 电台通讯字幕 ----------
@@ -4878,8 +4878,23 @@ function sparks(x,y,n){
 }
 
 // ---------- 生成 ----------
-function spawnZombie(type, x0){
+function spawnZombie(type, x0, e){
   if (type === 'grab'){ spawnGrabEvent(x0); return; }
+  if (type === 'flyer'){ spawnFlyer(x0); return; }
+  if (type === 'perch'){ // 高处埋伏的投掷手
+    sfx.sting(); G.waveStung = true; sfx.rise();
+    const z = { type:'thrower', tp:TYPES.thrower, wx0:toWX(x0), wxT:toWX(x0),
+      z:(e&&e.pz)||0.12, py:(e&&e.py)||4, hp:2, spd:0,
+      state:'perch', t:rand(1.0,1.6), phase:rand(0,TAU), flash:0, geo:null, headshot:false,
+      gaitSeed:rand(0,TAU), faceJit:rand(-0.1,0.1), char:makeChar('thrower') };
+    z.char.setAnim('idle');
+    // 高处光照弱，给轮廓一点自发光
+    z.char.obj.traverse(n=>{ if ((n.isMesh||n.isSkinnedMesh) && n.material.emissive && !/eyes/i.test(n.name)){
+      n.material.emissive.set(0x3a2416); n.material.emissiveIntensity=1; }});
+    G.zombies.push(z);
+    cineLookWorld(z.wx0, z.py+0.9, toWZ(z.z), {fov:52, hold:1.1});
+    return;
+  }
   const tp = TYPES[type];
   if (type === 'civ'){
     const dir = x0 < W/2 ? 1 : -1;
@@ -4923,8 +4938,78 @@ function spawnGrabEvent(x0){
   cineLookWorld(wx+0.2, 1.35, toWZ(0.72), {fov:48, hold:2.0});
 }
 
+// ---------- 飞行敌人（燃焰骷髅） ----------
+function spawnFlyer(x0){
+  const m=makeProp('skull',{h:0.46});
+  m.traverse(n=>{ if (n.isMesh){ n.material=n.material.clone();
+    n.material.emissive=new THREE.Color(0xff5510); n.material.emissiveIntensity=0.75; }});
+  const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:ETEX.glow, color:0xff7a20,
+    blending:THREE.AdditiveBlending, transparent:true, depthWrite:false}));
+  glow.scale.set(0.85,1.05,1);
+  scene.add(m); scene.add(glow);
+  G.flyers.push({ m, glow, t:0, phase:rand(0,TAU), x0:toWX(x0)*1.2,
+    zz:rand(0.04,0.1), ct:rand(1.7,2.5), state:'circle',
+    wx:toWX(x0), wy:3.2, wz:toWZ(0.05), geo:null, dive:null, gone:false });
+  sfx.sting(); sfx.rise();
+}
+function updateFlyers(dt){
+  for (const f of G.flyers){
+    if (f.gone) continue;
+    f.t+=dt;
+    if (f.state==='circle'){
+      f.zz=Math.min(1, f.zz+0.11*dt);
+      f.ct-=dt;
+      f.wx=clamp(f.x0+Math.sin(f.t*1.9+f.phase)*2.0, -6, 6);
+      f.wy=2.05+Math.sin(f.t*2.6+f.phase)*0.55+(1-f.zz)*1.1;
+      f.wz=toWZ(f.zz);
+      if (f.zz>0.5 && f.ct<=0){
+        f.state='dive'; f.t=0; sfx.swing();
+        f.dive={x0:f.wx, y0:f.wy, z0:f.wz, x1:CAM.x+rand(-0.3,0.3), y1:1.35, z1:CAM.z-0.35};
+      }
+    } else if (f.state==='dive'){
+      const q=Math.min(1, f.t/0.62), ea=q*q;
+      f.wx=lerp(f.dive.x0,f.dive.x1,ea);
+      f.wy=lerp(f.dive.y0,f.dive.y1,ea)+Math.sin(q*Math.PI)*0.3;
+      f.wz=lerp(f.dive.z0,f.dive.z1,ea);
+      if (q>=1){ hurt(1); sfx.swing(); f.state='flee'; f.t=0; }
+    } else { // flee 飞走
+      f.wy+=2.6*dt; f.wz-=5*dt; f.wx+=Math.sin(f.t*3+f.phase)*dt*2;
+      if (f.t>1.6) f.gone=true;
+    }
+    f.m.position.set(f.wx,f.wy,f.wz);
+    f.m.rotation.set(Math.sin(f.t*2.6)*0.15, 0, -Math.sin(f.t*1.9+f.phase)*0.25);
+    f.glow.position.set(f.wx,f.wy,f.wz);
+    const pj=project(f.wx,f.wy,f.wz);
+    if (pj){
+      const pe=project(f.wx+0.32,f.wy,f.wz);
+      f.geo={x:pj.x, y:pj.y, r:pe?Math.max(13,Math.abs(pe.x-pj.x)*1.5):18};
+      if (Math.random()<0.75) G.parts.push({x:pj.x+rand(-4,4), y:pj.y+rand(-2,6),
+        vx:rand(-16,16), vy:rand(6,36), g:-70, r:rand(1.5,3.1),
+        life:rand(0.2,0.45), t:0, color:pick(['#ff8830','#ffb050','#e05510'])});
+    } else f.geo=null;
+  }
+  G.flyers=G.flyers.filter(f=>{
+    if (f.gone){ scene.remove(f.m); scene.remove(f.glow); return false; }
+    return true;
+  });
+}
+function killFlyer(f){
+  G.score+=250; f.gone=true;
+  if (f.geo){ addPop(f.geo.x,f.geo.y,'+250','#ffb050'); blood(f.geo.x,f.geo.y,12,'#e07818',160); }
+  spawnChips3D({x:f.wx,y:f.wy,z:f.wz}, 3, true);
+  sfx.head();
+  if (G.state==='play' && !G.pending.length &&
+      !G.zombies.some(o=>!o.civ&&o.state!=='dying') &&
+      !G.flyers.some(o=>o!==f&&!o.gone)){
+    cineSlow(0.25,0.5);
+    cineLookWorld(f.wx,f.wy,f.wz,{fov:52,hold:0.7});
+  }
+}
+
 // ---------- 关卡推进 ----------
 function clearField(){
+  for (const f of G.flyers){ scene.remove(f.m); scene.remove(f.glow); }
+  G.flyers.length=0;
   for (const z of G.zombies) z.char.destroy();
   for (const c of G.corpses) c.char.destroy();
   for (const h of G.hatchets) if (h.mesh) scene.remove(h.mesh);
@@ -5004,6 +5089,11 @@ function tryHit(mx,my){
       h.dead = true; G.score += 150; addPop(h.geo.x,h.geo.y,'+150','#9ad9ff');
       sparks(h.geo.x,h.geo.y,14); sfx.ricochet(); return true;
     }
+  }
+  for (const f of G.flyers){
+    if (f.gone || !f.geo) continue;
+    const dx=mx-f.geo.x, dy=my-f.geo.y;
+    if (dx*dx+dy*dy < f.geo.r*f.geo.r){ killFlyer(f); return true; }
   }
   const b = G.boss;
   if (b && !b.dead && b.geo){
@@ -5112,7 +5202,7 @@ function killZombie(z, head){
       cineSlow(0.3,0.55);
     }
   }
-  if (G.state==='play' && !G.pending.length &&
+  if (G.state==='play' && !G.pending.length && !G.flyers.some(f=>!f.gone) &&
       !G.zombies.some(o=>o!==z && !o.civ && o.state!=='dying')){
     // 本波最后一杀：处决镜头
     const src=z.char.chest||z.char.obj;
@@ -5232,17 +5322,24 @@ function updatePlay(dt){
   G.waveT += dt;
   for (let i=G.pending.length-1;i>=0;i--){
     if (G.waveT >= G.pending[i].t){
-      spawnZombie(G.pending[i].type, G.pending[i].x);
+      spawnZombie(G.pending[i].type, G.pending[i].x, G.pending[i]);
       G.pending.splice(i,1);
     }
   }
   updateZombies(dt);
   updateHatchets(dt);
+  updateFlyers(dt);
+  // 镜头持续跟拍飞行敌人（不打断更长的事件镜头）
+  if (G.flyers.length && CINE.hold<0.25){
+    let best=null;
+    for (const f of G.flyers) if (!f.gone && (!best || f.zz>best.zz)) best=f;
+    if (best) cineLookWorld(best.wx, best.wy, best.wz, {fov:56, hold:0.18});
+  }
   G.groanCd -= dt;
   if (G.groanCd<=0 && G.zombies.some(z=>!z.civ && z.state!=='dying')){
     sfx.groan(rand(60,95)); G.groanCd = rand(1.6,3.2);
   }
-  if (!G.pending.length && !G.zombies.length && !G.hatchets.length){
+  if (!G.pending.length && !G.zombies.length && !G.hatchets.length && !G.flyers.length){
     G.lull += dt;
     if (G.lull > 0.9){
       G.waveIdx++;
@@ -5256,7 +5353,11 @@ function updateZombies(dt){
   for (const z of G.zombies){
     z.phase += dt*3.6;
     z.flash = Math.max(0, z.flash - dt);
-    if (z.state==='dying'){ z.t += dt; continue; }
+    if (z.state==='dying'){
+      z.t += dt;
+      if (z.py) z.py = Math.max(0, z.py - 16*z.t*dt); // 高处坠落
+      continue;
+    }
     if (z.civ){
       if (z.state==='grabbed') continue;
       z.wx += z.dir * 1.6 * dt;
@@ -5297,6 +5398,14 @@ function updateZombies(dt){
       case 'recoil':
         z.t += dt;
         if (z.t > 0.5){ z.z = 0.8; z.state='walk'; z.char.setAnim('walk'); }
+        break;
+      case 'perch':
+        z.t -= dt;
+        if (z.t<=0){
+          z.char.setAnim('attack',{once:true, then:'idle'});
+          throwHatchetDelayed(z, 0.45);
+          z.t = rand(2.6,3.8);
+        }
         break;
       case 'grabbing': {
         z.t += dt; z.gT -= dt;
@@ -5476,6 +5585,7 @@ function makeChar(kind){
       n.frustumCulled=false;
       n.material=n.material.clone();
       n.material.metalness=0;
+      if (kind==='civ') n.material.color.multiplyScalar(1.5); // 平民提亮以区分骷髅
       if (/eyes/i.test(n.name)){
         n.material.emissive=new THREE.Color(kind==='civ'?0x000000:0xff2212);
         n.material.emissiveIntensity=kind==='civ'?0:2.4;
@@ -5664,7 +5774,7 @@ function computeGeo(z, wx, wz){
   if (!headP){ z.geo=null; return; }
   const eP=project(_hv.x+0.16,_hv.y,_hv.z);
   const hr=eP? Math.max(9,Math.abs(eP.x-headP.x)*1.9) : 14;
-  const footP=project(wx,0,wz);
+  const footP=project(wx, z.py||0, wz);
   const bw=hr*2.6;
   z.geo={
     hx:headP.x, hy:headP.y, hr, k:hr/18,
@@ -5677,7 +5787,7 @@ function syncEntities(dt){
     const wz = z.civ? baseZ()-5.5 : toWZ(z.z);
     const wx = z.civ? z.wx : lerp(z.wx0,z.wxT,z.z);
     const lunge = (z.state==='windup')? Math.pow(Math.min(1,z.t/0.7),3)*0.4 : 0;
-    z.char.obj.position.set(wx,0,wz+lunge);
+    z.char.obj.position.set(wx, z.py||0, wz+lunge);
     if (z.civ) z.char.obj.rotation.y = FACE + (z.state==='grabbed'? 0 : (z.dir>0? Math.PI/2 : -Math.PI/2));
     else z.char.obj.rotation.y = FACE + (z.faceJit||0);
     z.char.update(dt);
@@ -5859,6 +5969,20 @@ function drawHUD(){
     ctx.restore();
   }
 }
+function drawCivMarkers(){
+  for (const z of G.zombies){
+    if (!z.civ || !z.geo || z.state==='dying' || z.state==='gone') continue;
+    const bob=Math.sin(G.tGlobal*5)*4;
+    const x=z.geo.hx, y=z.geo.hy - z.geo.hr*1.6 - 14 + bob;
+    const grabbed=z.state==='grabbed';
+    const col=grabbed? (Math.sin(G.tGlobal*10)>0?'#ff5a4e':'#7dffa8') : '#7dffa8';
+    ctx.save();
+    ctx.fillStyle=col;
+    ctx.beginPath(); ctx.moveTo(x,y+9); ctx.lineTo(x-7,y-3); ctx.lineTo(x+7,y-3); ctx.closePath(); ctx.fill();
+    cnTxt(grabbed?'人 质':'平 民', x, y-13, 12, col);
+    ctx.restore();
+  }
+}
 function drawRadio(){
   if (!G.radio) return;
   const r=G.radio;
@@ -5988,10 +6112,22 @@ function renderUI(){
       break;
     case 'walk':
       drawOverlayFX();
-      if (G.t<1.8 && Math.sin(G.t*7)>0) cnTxt('前 进 ▶', W/2, H*0.5, 30, '#7dffa8');
+      if (G.t<3.2){ // 纵深方向的上升箭头（与行进方向一致）
+        const ph=(G.tGlobal*1.5)%1;
+        ctx.save(); ctx.lineCap='round';
+        for (let i=0;i<3;i++){
+          const q=(ph+i/3)%1;
+          const yy=H*0.66-q*72, wch=27-q*11;
+          ctx.globalAlpha=Math.sin(q*Math.PI)*0.9;
+          ctx.strokeStyle='#7dffa8'; ctx.lineWidth=5;
+          ctx.beginPath(); ctx.moveTo(W/2-wch,yy+13); ctx.lineTo(W/2,yy); ctx.lineTo(W/2+wch,yy+13); ctx.stroke();
+        }
+        ctx.restore();
+        if (Math.sin(G.t*6)>0) cnTxt('前 进', W/2, H*0.73, 20, '#7dffa8');
+      }
       break;
     case 'play': case 'boss':
-      drawOverlayFX(); drawHUD(); drawCrosshair();
+      drawOverlayFX(); drawCivMarkers(); drawHUD(); drawCrosshair();
       if (G.paused){
         ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,W,H);
         cnTxt('暂停', W/2, H/2-10, 40, '#e8d9ae');
@@ -6226,6 +6362,7 @@ function handleClick(x,y){
       for (const z of G.zombies){ if (!z.civ&&z.state!=='dying') killZombie(z,false); }
       G.kills-=G.zombies.filter(z=>!z.civ&&z.state==='dying').length;
       for (const h of G.hatchets) h.dead=true;
+      for (const f of G.flyers) f.gone=true;
       if (G.boss){ G.boss.state='expose'; G.boss.t=0; G.boss.struck=false; G.boss.char.setAnim('idle'); setState('boss'); }
       else setState('play');
       sfx.coin(); say('行动继续！','CONTINUE',1.2,'#7dffa8');
