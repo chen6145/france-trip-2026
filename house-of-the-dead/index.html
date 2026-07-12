@@ -6033,7 +6033,7 @@ function makeChar(kind){
     const axe=cloneSkeleton(ASSETS.axe.scene);
     handR.add(axe);
   }
-  let cur=null, flashT=0, flashOn=false;
+  let cur=null, flashUntil=0, flashOn=false;
   const api={
     obj, mixer, actions, head, chest, handR, kind, face:def.face||0,
     dur(k){ return actions[k]? actions[k].getClip().duration/(Math.abs(actions[k].timeScale)||1) : 1; },
@@ -6060,13 +6060,12 @@ function makeChar(kind){
       }
     },
     walkRate(r){ if (actions.walk && cur===actions.walk) actions.walk.timeScale=r; },
-    flashHit(){ flashT=0.12; },
+    flashHit(){ flashUntil=performance.now()+120; }, // 真实时间截止：暂停/慢镜头下也会还原
     update(dt){
       mixer.update(dt);
-      if (flashT>0){
-        flashT-=dt;
+      if (performance.now()<flashUntil){
         if (!flashOn){
-          for (const m of mats){ if (m!==eyeMat && m.emissive) m.emissive.setScalar(0.55); }
+          for (const m of mats){ if (m!==eyeMat && m.emissive) m.emissive.setScalar(0.3); }
           flashOn=true;
         }
       } else if (flashOn){
